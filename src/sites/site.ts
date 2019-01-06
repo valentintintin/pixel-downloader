@@ -4,6 +4,7 @@ import { catchError, filter, map } from 'rxjs/operators';
 import * as cheerio from 'cheerio';
 import { PageVersionInterface } from '../interfaces/page-version-interface';
 import { PageDetailInterface } from '../interfaces/page-detail-interface';
+import { RssItemInterface } from '../interfaces/rss-item-interface';
 
 export abstract class Site {
     
@@ -15,7 +16,9 @@ export abstract class Site {
     
     public abstract search(query: string): Observable<PageVersionInterface[]>;
     
-    public abstract details(url: string): Observable<PageDetailInterface>;
+    public abstract getDetails(url: string): Observable<PageDetailInterface>;
+    
+    public abstract getRecents(): Observable<RssItemInterface[]>;
     
     protected getSearchUrl(query: string): string {
         const searchRequest = this.searchRequest.slice(0);

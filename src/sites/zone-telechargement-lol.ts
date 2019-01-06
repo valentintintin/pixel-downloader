@@ -4,6 +4,8 @@ import { map } from 'rxjs/operators';
 import { PageDetailInterface } from '../interfaces/page-detail-interface';
 import { PageVersionInterface } from '../interfaces/page-version-interface';
 import { LinkInterface } from '../interfaces/link-interface';
+import * as RssToJson from 'rss-to-json';
+import { RssItemInterface } from '../interfaces/rss-item-interface';
 
 export class ZoneTelechargementLol extends Site {
     
@@ -98,7 +100,7 @@ export class ZoneTelechargementLol extends Site {
         );
     }
     
-    details(url: string): Observable<PageDetailInterface> {
+    getDetails(url: string): Observable<PageDetailInterface> {
         return this.runRequest(url).pipe(
             map(($: CheerioStatic) => {
                 const pageEl = $('h2')[0];
@@ -143,5 +145,18 @@ export class ZoneTelechargementLol extends Site {
                 return pageDetail;
             })
         );
+    }
+    
+    public getRecents(): Observable<RssItemInterface[]> {
+        return Observable.create((observer) => {
+            RssToJson.load(this.baseUrl + 'rss.xml', (err, res) => {
+                if (err) {
+                    observer.error(err);
+                } else {
+                    observer.next(res.items);
+                }
+                observer.complete();
+            });
+        });
     }
 }

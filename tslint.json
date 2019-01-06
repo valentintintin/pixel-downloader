@@ -39,7 +39,7 @@
     "no-increment-decrement": true,
     "no-inferrable-types": true,
     "no-internal-module": true,
-    "no-null-keyword": true,
+    "no-null-keyword": false,
     "no-switch-case-fall-through": true,
     "no-trailing-whitespace": false,
     "no-type-assertion-whitespace": true,

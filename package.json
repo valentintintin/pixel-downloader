@@ -6,6 +6,8 @@
   "dependencies": {
     "@akanass/rx-http-request": "^3.1.0",
     "cheerio": "^1.0.0-rc.2",
+    "jdownloader-api": "^1.1.0",
+    "rss-to-json": "^1.0.4",
     "rxjs": "^6.3.3"
   },
   "devDependencies": {
