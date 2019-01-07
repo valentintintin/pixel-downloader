@@ -134,12 +134,16 @@ export class ZoneTelechargementLol extends Site {
                 }
                 
                 pageDetail.fileLinks = [];
-                const pages = $('.mov > a:first-child');
-                for (let i = 0; i < pages.length; i++) {
-                    const page = pages[i];
+                const links = $('.download');
+                for (let i = 0; i < links.length; i++) {
+                    const link = links[i];
+                    const linkInfo = link.parent.parent;
                     pageDetail.fileLinks.push({
-                        title: page.attribs.title,
-                        url: page.attribs.href
+                        title: link.children[0].data.trim(),
+                        url: link.attribs.href,
+                        host: linkInfo.parent.parent.children[1].children[1].children[1].children[1].data.trim(),
+                        size: linkInfo.children[5].firstChild.data.trim(),
+                        date: linkInfo.children[7].firstChild.data.trim(),
                     });
                 }
                 return pageDetail;

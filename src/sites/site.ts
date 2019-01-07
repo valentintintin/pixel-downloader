@@ -28,15 +28,17 @@ export abstract class Site {
     
     protected findText(el): string {
         let text = [];
-        
-        if (el.type === 'text') {
-            text.push(el.data.trim().replace('(', '').replace(')', ''));
-        } else if (el.children && el.children.length) {
-            for (const i in el.children) {
-                text = text.concat(this.findText(el.children[i]));
+    
+        if (el) {
+            if (el.type === 'text') {
+                text.push(el.data.trim().replace('(', '').replace(')', ''));
+            } else if (el.children && el.children.length) {
+                for (const i in el.children) {
+                    text = text.concat(this.findText(el.children[i]));
+                }
             }
         }
-        return text.join(' ');
+        return text.length > 0 ? text.join(' ') : '';
     }
     
     protected runRequest(url: string): Observable<{} | CheerioStatic> {

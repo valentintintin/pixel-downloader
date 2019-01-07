@@ -4,6 +4,8 @@ import { prompt } from 'enquirer';
 
 import * as config from './config';
 import { Site } from './sites/site';
+import { LinkInterface } from './interfaces/link-interface';
+import { Observable } from 'rxjs';
 import ora = require('ora');
 
 // const pkg = require('../package.json');
@@ -11,12 +13,36 @@ import ora = require('ora');
 // const conf = new Configstore(pkg.name);
 
 const jd = new JDownloader(config.JDOWNLOADER_LOGIN, config.JDOWNLOADER_PASSWORD, config.JDOWNLOADER_DEVICE_NAME);
-
 const sites: Site[] = [
     new ZoneTelechargementLol()
 ];
 
+// sites[0].getDetails('https://www.zone-telechargement2.lol/films-gratuit/8689--Pay-The-Ghost.html').subscribe();
 main();
+
+function selectLinksToSave(links: LinkInterface[]): Observable<LinkInterface[]> {
+    return Observable.create(observer => {
+        prompt({
+            type: 'multiselect',
+            name: 'choices',
+            message: 'Save links ?',
+            muliple: true,
+            sort: true,
+            initial: 0,
+            choices: links.map(l => {
+                return {
+                    name: l.url,
+                    message: (l.host ? l.host + ' - ' : '') + l.title + (l.size ? ' - ' + l.size : '') + (l.date ? ' - ' + l.date : '')
+                };
+            })
+        }).then((linksToAdd: any) => {
+            console.log(linksToAdd);
+            linksToAdd.choices.forEach(link => jd.addLinkToQueue(link));
+            observer.next(linksToAdd.choices);
+            observer.complete();
+        });
+    });
+}
 
 function doJdownloaderFlush() {
     const spinner = ora('Adding links to JDownloader').start();
@@ -27,8 +53,31 @@ function doJdownloaderFlush() {
 }
 
 function doRecents() {
-    sites[0].getRecents().subscribe(items => console.log(items));
-    main();
+    const spinner = ora('Searching in ' + sites[0].baseUrl).start();
+    sites[0].getRecents().subscribe(result => {
+        spinner.succeed();
+        prompt({
+            type: 'select',
+            name: 'choice',
+            message: 'Which one to choose',
+            initial: 0,
+            choices: result.map(r => {
+                return {
+                    name: r.link,
+                    message: r.title + (r.category ? ' - ' + r.category : '') + (r.date ? ' - ' + r.date : '')
+                };
+            })
+        }).then((page: any) => {
+            spinner.start('Loading links');
+            sites[0].getDetails(page.choice).subscribe(result => {
+                spinner.succeed(result.fileLinks.length + ' links found !');
+                selectLinksToSave(result.fileLinks).subscribe((linksAdded) => {
+                    console.log(linksAdded.length + ' links added to queue');
+                    main();
+                });
+            });
+        });
+    });
 }
 
 function doSearch() {
@@ -54,22 +103,9 @@ function doSearch() {
             }).then((page: any) => {
                 spinner.start('Loading links');
                 sites[0].getDetails(page.choice).subscribe(result => {
-                    spinner.succeed(result.fileLinks.length + ' links found !');
-                    prompt({
-                        type: 'select',
-                        name: 'choice',
-                        message: 'Save links ?',
-                        muliple: true,
-                        initial: 0,
-                        choices: result.fileLinks.map(l => {
-                            return {
-                                name: l.url,
-                                message: l.title + (l.language ? ' ' + l.language : '') + (l.quality ? ' ' + l.quality : '')
-                            };
-                        })
-                    }).then((linksToAdd: any) => {
-                        console.log(linksToAdd);
-                        linksToAdd.choices.forEach(link => jd.addLinkToQueue(link));
+                    spinner.succeed(result.fileLinks.length + ' links found for ' + result.title + (result.language ? ' ' + result.language : '') + (result.quality ? ' ' + result.quality : ''));
+                    selectLinksToSave(result.fileLinks).subscribe((linksAdded) => {
+                        console.log(linksAdded.length + ' links added to queue');
                         main();
                     });
                 });
@@ -113,4 +149,11 @@ function main() {
             console.log('Bye !');
         }
     });
+}
+
+function groupBy(xs, key) {
+    return xs.reduce((rv, x) => {
+        (rv[x[key]] = rv[x[key]] || []).push(x);
+        return rv;
+    }, {});
 }
