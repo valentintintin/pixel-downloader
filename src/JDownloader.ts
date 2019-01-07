@@ -1,12 +1,13 @@
-import * as JdownloaderApi from 'jdownloader-api';
 import { Observable, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
+import JdownloaderApi = require('jdownloader-api');
 
 export class JDownloader {
     
+    public linksToAdd: string[] = [];
+    
     private alreadyConnected = false;
     private deviceId: string;
-    private linksToAdd: string[] = [];
     
     constructor(private username: string, private password: string, private deviceName: string) {
     }

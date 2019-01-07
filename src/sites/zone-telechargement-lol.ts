@@ -4,8 +4,8 @@ import { map } from 'rxjs/operators';
 import { PageDetailInterface } from '../interfaces/page-detail-interface';
 import { PageVersionInterface } from '../interfaces/page-version-interface';
 import { LinkInterface } from '../interfaces/link-interface';
-import * as RssToJson from 'rss-to-json';
 import { RssItemInterface } from '../interfaces/rss-item-interface';
+import RssToJson = require('rss-to-json');
 
 export class ZoneTelechargementLol extends Site {
     

@@ -1,14 +1,14 @@
-import { Observable } from 'rxjs';
-import { RxHR } from '@akanass/rx-http-request';
-import { catchError, filter, map } from 'rxjs/operators';
-import * as cheerio from 'cheerio';
 import { PageVersionInterface } from '../interfaces/page-version-interface';
 import { PageDetailInterface } from '../interfaces/page-detail-interface';
 import { RssItemInterface } from '../interfaces/rss-item-interface';
+import { Observable } from 'rxjs';
+import { RxHR } from '@akanass/rx-http-request';
+import { catchError, filter, map } from 'rxjs/operators';
+import Cheerio = require('cheerio');
 
 export abstract class Site {
     
-    protected constructor(protected readonly baseUrl: string, protected pageSearchRequest: string, protected readonly searchRequest: string[][], protected readonly queryParameterName: string) {
+    protected constructor(public readonly baseUrl: string, protected pageSearchRequest: string, protected readonly searchRequest: string[][], protected readonly queryParameterName: string) {
         if (this.baseUrl[this.baseUrl.length - 1] !== '/') {
             this.baseUrl += '/';
         }
@@ -42,7 +42,7 @@ export abstract class Site {
     protected runRequest(url: string): Observable<{} | CheerioStatic> {
         return RxHR.get(url).pipe(
             filter(data => data.response.statusCode === 200),
-            map(data => cheerio.load(data.body)),
+            map(data => Cheerio.load(data.body)),
             catchError(err => {
                 console.error(err);
                 return err;
