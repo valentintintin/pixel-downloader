@@ -1,10 +1,11 @@
 import { Observable, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
+import { LinkInterface } from './interfaces/link-interface';
 import JdownloaderApi = require('jdownloader-api');
 
 export class JDownloader {
     
-    public linksToAdd: string[] = [];
+    public linksToAdd: LinkInterface[] = [];
     
     private alreadyConnected = false;
     private deviceId: string;
@@ -12,13 +13,25 @@ export class JDownloader {
     constructor(private username: string, private password: string, private deviceName: string) {
     }
     
-    public addLinkToQueue(url: string) {
-        if (this.linksToAdd.indexOf(url) === -1) {
-            this.linksToAdd.push(url);
+    public addLinkToQueue(link: LinkInterface): boolean {
+        if (!this.linksToAdd.find(l => l.url === link.url)) {
+            this.linksToAdd.push(link);
+            return true;
         }
+        return false;
     }
     
-    public flushQueue(): Observable<string[]> {
+    public addLinksToQueue(links: LinkInterface[]): LinkInterface[] {
+        const linksAdded: LinkInterface[] = [];
+        links.forEach(link => {
+            if (this.addLinkToQueue(link)) {
+                linksAdded.push(link);
+            }
+        });
+        return linksAdded;
+    }
+    
+    public flushQueue(): Observable<LinkInterface[]> {
         if (!this.linksToAdd.length) {
             return of(null);
         }
@@ -26,7 +39,7 @@ export class JDownloader {
             return Observable.create(observer => {
                 JdownloaderApi.queryLinks(this.deviceId).then(links => {
                     const currentLinks: string[] = links.data.map(l => l.url);
-                    const linksToAdd: string[] = this.linksToAdd.filter(l => currentLinks.indexOf(l) === -1);
+                    const linksToAdd: string[] = this.linksToAdd.map(l => l.url).filter(l => currentLinks.indexOf(l) === -1);
                     JdownloaderApi.addLinks(linksToAdd, this.deviceId, false).then(() => {
                         this.linksToAdd.length = 0;
                         this.disconnect().then(() => {
