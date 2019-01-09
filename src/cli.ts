@@ -99,7 +99,7 @@ export class Cli {
                 return this.sites[0].getDetails(page[0]);
             }),
             switchMap((result: Page) => {
-                this.spinner.succeed((result.relatedPage.length + 1) + ' versions found !');
+                this.spinner.succeed((result.relatedPage.length + 1) + ' versions found (all host) !');
                 return this.selectPageVersionAndLinks(result, host);
             })
         );
@@ -198,7 +198,9 @@ export class Cli {
 
         return start.pipe(
             switchMap((hostsSelected: string[]) => {
-                return this.menu('Save links ?', links.filter(l => hostsSelected.indexOf(l.host) !== -1).map(l => {
+                const linksByHost = links.filter(l => hostsSelected.indexOf(l.host) !== -1);
+                console.log(linksByHost.length + ' lins found for ' + hostsSelected.join(', ') + ' !');
+                return this.menu('Save links ?', linksByHost.map(l => {
                         return {
                             data: l,
                             text: l.toString()
@@ -217,6 +219,9 @@ export class Cli {
 
 
     private menu(text: string, items: MenuInterface[], multiple = false): Observable<any | any[]> {
+        if (items.length === 0) {
+            return of([]);
+        }
         return Observable.create(observer => {
             prompt({
                 type: multiple ? 'multiselect' : 'select',
