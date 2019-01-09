@@ -1,10 +1,9 @@
 import { Site } from './site';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { PageDetailInterface } from '../interfaces/page-detail-interface';
-import { PageVersionInterface } from '../interfaces/page-version-interface';
-import { LinkInterface } from '../interfaces/link-interface';
-import { RssItemInterface } from '../interfaces/rss-item-interface';
+import { Page } from '../models/page';
+import { Link } from '../models/link';
+import { RssItem } from '../models/rss-item';
 import RssToJson = require('rss-to-json');
 
 export class ZoneTelechargementLol extends Site {
@@ -81,53 +80,47 @@ export class ZoneTelechargementLol extends Site {
             ]
         ], 'story');
     }
-    
-    search(query: string): Observable<LinkInterface[]> {
+
+    search(query: string): Observable<Page[]> {
         return this.runRequest(this.getSearchUrl(query)).pipe(
             map(($: CheerioStatic) => {
-                const links: LinkInterface[] = [];
+                const pages: Page[] = [];
                 const resultsEls = $('.mov > a:first-child');
                 // resultsEls = resultsEls.filter(i => resultsEls[i].tagName === 'a' && resultsEls[i].attribs !== null && resultsEls[i].attribs.href !== null);
                 for (let i = 0; i < resultsEls.length; i++) {
                     const page = resultsEls[i];
-                    links.push({
-                        title: page.attribs.title,
-                        url: page.attribs.href
-                    });
+                    pages.push(new Page(page.attribs.title, page.attribs.href, null, null));
                 }
-                return links;
+                return pages;
             })
         );
     }
-    
-    getDetails(url: string): Observable<PageDetailInterface> {
+
+    getDetails(url: string): Observable<Page> {
         return this.runRequest(url).pipe(
             map(($: CheerioStatic) => {
                 const pageEl = $('h2')[0];
-                const pageElInfo = pageEl.nextSibling.children;
-                const pageDetail: PageDetailInterface = {
-                    title: pageEl.children[1].firstChild.data, // + (pageElInfo. > 2 ? ' ' + pageElInfo[2].data.trim() : ''),
-                    url: url + '',
-                    quality: pageElInfo ? pageElInfo[0].data.split('|')[0].replace('Qualité', '').trim() + '' : '',
-                    language: pageElInfo ? pageElInfo[0].data.split('|')[1].trim() + '' : '',
-                    relatedPage: []
-                };
+                const pageElInfo = pageEl.next.next.children;
+                const pageDetail = new Page(
+                    pageEl.children[1].firstChild.data, // + (pageElInfo. > 2 ? ' ' + pageElInfo[2].data.trim() : ''),
+                    url + '',
+                    pageElInfo ? pageElInfo[0].data.split('|')[1].trim() + '' : '',
+                    pageElInfo ? pageElInfo[0].data.split('|')[0].replace('Qualité', '').trim() + '' : ''
+                );
                 
                 const versionsEls = $('.otherversions a');
                 for (let i = 0; i < versionsEls.length; i++) {
                     const versionEl = versionsEls[i];
-                    const version: PageVersionInterface = {
-                        url: versionEl.attribs.href,
-                        title: '',
-                        quality: '',
-                        language: ''
-                    };
                     const versionInfosEls = versionEl.firstChild.children;
-                    version.title = this.findText(versionInfosEls[0]);
-                    version.quality = this.findText(versionInfosEls[1]);
-                    version.language = this.findText(versionInfosEls[2]);
+                    const offset = versionInfosEls.length === 2 ? 0 : 1;
+                    const version = new Page(
+                        pageDetail.title + (offset > 0 ? ' ' + this.findText(versionInfosEls[0]) : ''),
+                        versionEl.attribs.href,
+                        this.findText(versionInfosEls[1 + offset]),
+                        this.findText(versionInfosEls[offset])
+                    );
                     if (!version.quality) {
-                        version.language = '';
+                        version.language = null;
                         version.quality = this.findText(versionInfosEls[2]);
                     }
                     pageDetail.relatedPage.push(version);
@@ -138,26 +131,29 @@ export class ZoneTelechargementLol extends Site {
                 for (let i = 0; i < links.length; i++) {
                     const link = links[i];
                     const linkInfo = link.parent.parent;
-                    pageDetail.fileLinks.push({
-                        title: link.children[0].data.trim(),
-                        url: link.attribs.href,
-                        host: linkInfo.parent.parent.children[1].children[1].children[1].children[1].data.trim(),
-                        size: linkInfo.children[5].firstChild.data.trim(),
-                        date: linkInfo.children[7].firstChild.data.trim(),
-                    });
+                    pageDetail.fileLinks.push(new Link(
+                        link.children[0].data.trim(),
+                        link.attribs.href,
+                        linkInfo.parent.parent.children[1].children[1].children[1].children[1].data.trim(),
+                        linkInfo.children[5].firstChild.data.trim(),
+                        linkInfo.children[7].firstChild.data.trim()
+                    ));
                 }
                 return pageDetail;
             })
         );
     }
-    
-    public getRecents(): Observable<RssItemInterface[]> {
+
+    public getRecents(): Observable<RssItem[]> {
         return Observable.create((observer) => {
             RssToJson.load(this.baseUrl + 'rss.xml', (err, res) => {
                 if (err) {
                     observer.error(err);
                 } else {
-                    observer.next(res.items);
+                    observer.next(res.items.map(i => new RssItem(
+                        i.title, i.link,
+                        i.description, i.category, i.date
+                    )));
                 }
                 observer.complete();
             });

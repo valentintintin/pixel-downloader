@@ -118,6 +118,8 @@
     "no-console": false,
     "no-debugger": false,
     "no-empty-interface": false,
+    "no-empty": false,
+    "prefer-for-of": false,
     "no-eval": false,
     "no-object-literal-type-assertion": false,
     "no-shadowed-variable": false,

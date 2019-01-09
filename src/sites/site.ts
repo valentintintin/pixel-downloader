@@ -1,6 +1,6 @@
-import { PageVersionInterface } from '../interfaces/page-version-interface';
-import { PageDetailInterface } from '../interfaces/page-detail-interface';
-import { RssItemInterface } from '../interfaces/rss-item-interface';
+import { Page } from '../models/page';
+import { PageDetail } from '../models/page-detail';
+import { RssItem } from '../models/rss-item';
 import { Observable } from 'rxjs';
 import { RxHR } from '@akanass/rx-http-request';
 import { catchError, filter, map } from 'rxjs/operators';
@@ -13,12 +13,12 @@ export abstract class Site {
             this.baseUrl += '/';
         }
     }
-    
-    public abstract search(query: string): Observable<PageVersionInterface[]>;
-    
-    public abstract getDetails(url: string): Observable<PageDetailInterface>;
-    
-    public abstract getRecents(): Observable<RssItemInterface[]>;
+
+    public abstract search(query: string): Observable<Page[]>;
+
+    public abstract getDetails(url: string): Observable<PageDetail>;
+
+    public abstract getRecents(): Observable<RssItem[]>;
     
     protected getSearchUrl(query: string): string {
         const searchRequest = this.searchRequest.slice(0);
