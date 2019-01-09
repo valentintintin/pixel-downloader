@@ -100,7 +100,7 @@ export class Cli {
             }),
             switchMap((result: Page) => {
                 this.spinner.succeed((result.relatedPage.length + 1) + ' versions found !');
-                return this.selectPageVersionAndLinks(result);
+                return this.selectPageVersionAndLinks(result, host);
             })
         );
     }
@@ -144,7 +144,7 @@ export class Cli {
         );
     }
 
-    private selectPageVersionAndLinks(page: Page): Observable<Link[]> {
+    private selectPageVersionAndLinks(page: Page, host: string = null): Observable<Link[]> {
         let start: Observable<Page> = this.menu('Which version do you want ?', [
                 {
                     text: page.title + (page.language ? ' ' + page.language : '') + (page.quality ? ' ' + page.quality : ''),
@@ -162,36 +162,55 @@ export class Cli {
         }
         return start.pipe(
             switchMap((r: Page) => {
-                let links = of(r.fileLinksByHost());
+                let links = of(r.fileLinks);
                 if (r !== page) {
                     this.spinner.start('Loading links');
-                    links = this.sites[0].getDetails(r.url).pipe(map((p: Page) => p.fileLinksByHost()));
+                    links = this.sites[0].getDetails(r.url).pipe(map((p: Page) => p.fileLinks));
                 }
-                return links.pipe(tap(() => this.spinner.succeed(r.fileLinks.length + ' links found !')));
+                return links.pipe(tap((linksPossible) => this.spinner.succeed(linksPossible.length + ' links found !')));
             }),
-            switchMap((links: { [key: string]: Link[] }) => {
-                return this.selectLinksToSave(links);
+            switchMap((links: Link[]) => {
+                return this.selectLinksToSave(links, host);
             })
         );
     }
 
-    private selectLinksToSave(linksByHost: { [key: string]: Link[] }): Observable<Link[]> {
+    private selectLinksToSave(links: Link[], hostUser: string = null): Observable<Link[]> {
+        const hosts: string[] = [];
+        links.forEach(link => {
+            if (hosts.indexOf(link.host) === -1) {
+                hosts.push(link.host);
+            }
+        });
 
-        if (Object.keys(linksByHost).length === 1) {
+        let start = this.menu('Which host would you like ?', hosts.map(h => {
+            return {
+                text: h,
+                data: h
+            };
+        }), true);
 
+        if (hostUser !== null) {
+            start = of([hostUser]);
+        } else if (hosts.length === 1) {
+            start = of(hosts);
         }
 
-        return this.menu('Save links ?', links.map(l => {
-                return {
-                    data: l,
-                    text: l.toString()
-                };
-            }).sort((a, b) => a.text < b.text ? -1 : 1), true
-        ).pipe(
-            map((linksToAdd: Link[]) => {
-                const linksAdded = this.jd.addLinksToQueue(linksToAdd);
-                console.log(linksAdded.length + ' links added to queue');
-                return linksAdded;
+        return start.pipe(
+            switchMap((hostsSelected: string[]) => {
+                return this.menu('Save links ?', links.filter(l => hostsSelected.indexOf(l.host) !== -1).map(l => {
+                        return {
+                            data: l,
+                            text: l.toString()
+                        };
+                    }).sort((a, b) => a.text < b.text ? -1 : 1), true
+                ).pipe(
+                    map((linksToAdd: Link[]) => {
+                        const linksAdded = this.jd.addLinksToQueue(linksToAdd);
+                        console.log(linksAdded.length + ' links added to queue');
+                        return linksAdded;
+                    })
+                );
             })
         );
     }
@@ -224,6 +243,9 @@ export class Cli {
                 const items: MenuInterface[] = choosen.choice;
                 observer.next(items.map(c => c.data));
                 observer.complete();
+            }).catch(err => {
+                observer.error(err);
+                observer.complete();
             });
         });
     }
@@ -236,6 +258,9 @@ export class Cli {
                 message: text
             }).then((answer: any) => {
                 observer.next(answer.typed);
+                observer.complete();
+            }).catch(err => {
+                observer.error(err);
                 observer.complete();
             });
         });
