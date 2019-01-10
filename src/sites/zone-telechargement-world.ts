@@ -2,6 +2,7 @@ import { Site } from './site';
 import { Observable } from 'rxjs';
 import { Page } from '../models/page';
 import { map } from 'rxjs/operators';
+import { Link } from '../models/link';
 import RssToJson = require('rss-to-json');
 
 export class ZoneTelechargementWorld extends Site {
@@ -80,7 +81,51 @@ export class ZoneTelechargementWorld extends Site {
     }
 
     getDetails(url: string): Observable<Page> {
-        throw new Error('Not implemented');
+        return this.runRequest(url).pipe(
+            map(($: CheerioStatic) => {
+                const pageEl = $('.corps h1')[0];
+                const pageElInfo = $('.corps h2')[0];
+                const pageDetail = new Page(
+                    pageEl.firstChild.data, // + (pageElInfo. > 2 ? ' ' + pageElInfo[2].data.trim() : ''),
+                    url + '',
+                    pageElInfo ? pageElInfo.firstChild.data.split('|')[1] + '' : '',
+                    pageElInfo ? pageElInfo.firstChild.data.split('|')[0] + '' : ''
+                );
+                pageDetail.site = this;
+
+                const versionsEls = $('.otherversions a');
+                for (let i = 0; i < versionsEls.length; i++) {
+                    const versionEl = versionsEls[i];
+                    const versionInfosEls = versionEl.firstChild.children;
+                    const offset = versionInfosEls.length === 2 ? 0 : 1;
+                    const version = new Page(
+                        pageDetail.title + (offset > 0 ? ' ' + this.findText(versionInfosEls[0]) : ''),
+                        versionEl.attribs.href,
+                        this.findText(versionInfosEls[2 + offset]),
+                        this.findText(versionInfosEls[offset])
+                    );
+                    if (!version.quality) {
+                        version.language = null;
+                        version.quality = this.findText(versionInfosEls[2]);
+                    }
+                    version.site = this;
+                    pageDetail.relatedPage.push(version);
+                }
+
+                pageDetail.fileLinks = [];
+                const links = $('.ilinx_global a');
+                for (let i = 0; i < links.length; i++) {
+                    const link = links[i];
+                    const linkInfo = link.parent.prev.prev.children;
+                    pageDetail.fileLinks.push(new Link(
+                        link.children[0].data,
+                        link.attribs.href,
+                        linkInfo[0].firstChild.data,
+                    ));
+                }
+                return pageDetail;
+            })
+        );
     }
 
     getRecents(): Observable<Page[]> {
@@ -104,7 +149,7 @@ export class ZoneTelechargementWorld extends Site {
                 const resultsEls = $('.cover_infos_title a:nth-child(2)');
                 for (let i = 0; i < resultsEls.length; i++) {
                     const page = resultsEls[i];
-                    pages.push(new Page(page.firstChild.data, page.attribs.href, null, page.children[1].firstChild.data, null, null, null, this));
+                    pages.push(new Page(page.firstChild.data, page.attribs.href, null, page.children[1].children.length ? page.children[1].firstChild.data : null, null, null, null, this));
                 }
                 return pages;
             })

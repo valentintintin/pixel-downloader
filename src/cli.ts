@@ -8,6 +8,7 @@ import { map, switchMap, tap } from 'rxjs/operators';
 import { prompt } from 'enquirer';
 import { Page } from './models/page';
 import { ZoneTelechargementWorld } from './sites/zone-telechargement-world';
+import { Utils } from './utils';
 import ora = require('ora');
 
 export class Cli {
@@ -83,7 +84,7 @@ export class Cli {
 
         return start.pipe(
             switchMap(query => {
-                this.spinner.start('Searching in ' + this.sites.map(s => s.baseUrl).join(', '));
+                this.spinner.start('Searching in ' + this.sites.map(s => s.host).join(', '));
                 const obsSites: Observable<Page[]>[] = [];
                 this.sites.forEach(site => obsSites.push(site.search(query)));
                 return combineLatest(obsSites).pipe(map(res => [].concat(...res)));
@@ -93,17 +94,18 @@ export class Cli {
                 return this.menu('Which one to choose ?', result.map(r => {
                     return {
                         data: r,
-                        text: r.toString() + ' - ' + r.site.baseUrl
+                        text: r.toString() + ' - ' + r.site.host
                     };
                 }));
             }),
             map(result => result[0]),
             switchMap((page: Page) => {
+                console.log('Selected : ' + page.url);
                 this.spinner.start('Loading details');
                 return page.site.getDetails(page.url);
             }),
             switchMap((result: Page) => {
-                this.spinner.succeed((result.relatedPage.length + 1) + ' versions found (all host) !');
+                this.spinner.succeed((result.relatedPage.length + 1) + ' versions found !');
                 return this.selectPageVersionAndLinks(result, host);
             })
         );
@@ -125,7 +127,7 @@ export class Cli {
 
 
     private doRecents(): Observable<Link[]> {
-        this.spinner.start('Searching in ' + this.sites.map(s => s.baseUrl).join(', '));
+        this.spinner.start('Searching in ' + this.sites.map(s => s.host).join(', '));
 
         const obsSites: Observable<Page[]>[] = [];
         this.sites.forEach(site => obsSites.push(site.getRecents()));
@@ -137,12 +139,13 @@ export class Cli {
                 return this.menu('Which one to choose', result.map(r => {
                     return {
                         data: r,
-                        text: r.toString() + ' - ' + (r.date as Date).toLocaleString() + ' - ' + r.site.baseUrl
+                        text: r.toString() + ' - ' + (r.date as Date).toLocaleString() + ' - ' + r.site.host
                     };
                 }).sort((a, b) => (a.data.date as Date).getTime() > (b.data.date as Date).getTime() ? -1 : 1));
             }),
             map(result => result[0]),
             switchMap((page: Page) => {
+                console.log('Selected : ' + page.url);
                 this.spinner.start('Loading details');
                 return page.site.getDetails(page.url);
             }),
@@ -205,7 +208,7 @@ export class Cli {
         }), true);
 
         if (hostUser !== null) {
-            start = of([hostUser]);
+            start = of([Utils.getHostFromUrl(hostUser)]);
         } else if (hosts.length === 1) {
             start = of(hosts);
         }

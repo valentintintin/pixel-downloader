@@ -1,3 +1,5 @@
+import { Utils } from '../utils';
+
 export class Link {
 
     constructor(
@@ -11,7 +13,7 @@ export class Link {
         this.url = url.trim();
 
         if (host) {
-            this.host = host.trim();
+            this.host = Utils.getHostFromUrl(host);
         }
         if (date && typeof date === 'string') {
             this.date = date.replace('-', '').trim();

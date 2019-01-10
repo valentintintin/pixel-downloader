@@ -3,7 +3,6 @@ import { Site } from '../sites/site';
 
 export class Page extends Link {
 
-
     public relatedPage: Page[] = [];
     public fileLinks: Link[] = [];
     

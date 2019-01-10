@@ -2,9 +2,12 @@ import { Page } from '../models/page';
 import { Observable } from 'rxjs';
 import { RxHR } from '@akanass/rx-http-request';
 import { catchError, filter, map } from 'rxjs/operators';
+import { Utils } from "../utils";
 import Cheerio = require('cheerio');
 
 export abstract class Site {
+
+    public host: string;
 
     protected constructor(public readonly baseUrl: string,
                           protected pageSearchRequest: string,
@@ -13,6 +16,7 @@ export abstract class Site {
         if (this.baseUrl[this.baseUrl.length - 1] !== '/') {
             this.baseUrl += '/';
         }
+        this.host = Utils.getHostFromUrl(this.baseUrl);
     }
 
     public abstract search(query: string): Observable<Page[]>;

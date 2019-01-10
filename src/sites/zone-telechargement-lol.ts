@@ -133,7 +133,7 @@ export class ZoneTelechargementLol extends Site {
                     const link = links[i];
                     const linkInfo = link.parent.parent;
                     pageDetail.fileLinks.push(new Link(
-                        link.children[0].data,
+                        link.firstChild.data,
                         link.attribs.href,
                         linkInfo.parent.parent.children[1].children[1].children[1].children[1].data,
                         linkInfo.children[7].firstChild.data,
