@@ -150,10 +150,7 @@ export class ZoneTelechargementLol extends Site {
                 if (err) {
                     observer.error(err);
                 } else {
-                    observer.next(res.items.map(i => new RssItem(
-                        i.title, i.link,
-                        i.description, i.category, i.date
-                    )));
+                    observer.next(res.items.map(i => new RssItem(i.title, i.link, i.description, new Date(i.created))));
                 }
                 observer.complete();
             });
