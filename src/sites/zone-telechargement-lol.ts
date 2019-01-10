@@ -3,7 +3,6 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Page } from '../models/page';
 import { Link } from '../models/link';
-import { RssItem } from '../models/rss-item';
 import RssToJson = require('rss-to-json');
 
 export class ZoneTelechargementLol extends Site {
@@ -81,15 +80,15 @@ export class ZoneTelechargementLol extends Site {
         ], 'story');
     }
 
+    // TODO : next page ?
     search(query: string): Observable<Page[]> {
         return this.runRequest(this.getSearchUrl(query)).pipe(
             map(($: CheerioStatic) => {
                 const pages: Page[] = [];
                 const resultsEls = $('.mov > a:first-child');
-                // resultsEls = resultsEls.filter(i => resultsEls[i].tagName === 'a' && resultsEls[i].attribs !== null && resultsEls[i].attribs.href !== null);
                 for (let i = 0; i < resultsEls.length; i++) {
                     const page = resultsEls[i];
-                    pages.push(new Page(page.attribs.title, page.attribs.href, null, null));
+                    pages.push(new Page(page.attribs.title, page.attribs.href, null, null, null, null, null, this));
                 }
                 return pages;
             })
@@ -104,9 +103,10 @@ export class ZoneTelechargementLol extends Site {
                 const pageDetail = new Page(
                     pageEl.children[1].firstChild.data, // + (pageElInfo. > 2 ? ' ' + pageElInfo[2].data.trim() : ''),
                     url + '',
-                    pageElInfo ? pageElInfo[0].data.split('|')[1].trim() + '' : '',
-                    pageElInfo ? pageElInfo[0].data.split('|')[0].replace('Qualité', '').trim() + '' : ''
+                    pageElInfo ? pageElInfo[0].data.split('|')[1] + '' : '',
+                    pageElInfo ? pageElInfo[0].data.split('|')[0] + '' : ''
                 );
+                pageDetail.site = this;
                 
                 const versionsEls = $('.otherversions a');
                 for (let i = 0; i < versionsEls.length; i++) {
@@ -123,6 +123,7 @@ export class ZoneTelechargementLol extends Site {
                         version.language = null;
                         version.quality = this.findText(versionInfosEls[2]);
                     }
+                    version.site = this;
                     pageDetail.relatedPage.push(version);
                 }
                 
@@ -132,11 +133,11 @@ export class ZoneTelechargementLol extends Site {
                     const link = links[i];
                     const linkInfo = link.parent.parent;
                     pageDetail.fileLinks.push(new Link(
-                        link.children[0].data.trim(),
+                        link.children[0].data,
                         link.attribs.href,
-                        linkInfo.parent.parent.children[1].children[1].children[1].children[1].data.trim(),
-                        linkInfo.children[5].firstChild.data.trim(),
-                        linkInfo.children[7].firstChild.data.trim()
+                        linkInfo.parent.parent.children[1].children[1].children[1].children[1].data,
+                        linkInfo.children[7].firstChild.data,
+                        linkInfo.children[5].firstChild.data,
                     ));
                 }
                 return pageDetail;
@@ -144,13 +145,13 @@ export class ZoneTelechargementLol extends Site {
         );
     }
 
-    public getRecents(): Observable<RssItem[]> {
+    public getRecents(): Observable<Page[]> {
         return Observable.create((observer) => {
             RssToJson.load(this.baseUrl + 'rss.xml', (err, res) => {
                 if (err) {
                     observer.error(err);
                 } else {
-                    observer.next(res.items.map(i => new RssItem(i.title, i.link, i.description, new Date(i.created))));
+                    observer.next(res.items.map(i => new Page(i.title, i.link, null, null, null, new Date(i.created), null, this)));
                 }
                 observer.complete();
             });

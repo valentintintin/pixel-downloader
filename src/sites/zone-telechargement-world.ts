@@ -1,7 +1,7 @@
 import { Site } from './site';
 import { Observable } from 'rxjs';
-import { RssItem } from '../models/rss-item';
 import { Page } from '../models/page';
+import { map } from 'rxjs/operators';
 import RssToJson = require('rss-to-json');
 
 export class ZoneTelechargementWorld extends Site {
@@ -80,24 +80,35 @@ export class ZoneTelechargementWorld extends Site {
     }
 
     getDetails(url: string): Observable<Page> {
-        return undefined;
+        throw new Error('Not implemented');
     }
 
-    getRecents(): Observable<RssItem[]> {
+    getRecents(): Observable<Page[]> {
         return Observable.create((observer) => {
             RssToJson.load(this.baseUrl + 'rss.xml', (err, res) => {
                 if (err) {
                     observer.error(err);
                 } else {
-                    observer.next(res.items.map(i => new RssItem(i.title, i.link, i.description, new Date(i.created))));
+                    observer.next(res.items.map(i => new Page(i.title, i.link, null, null, null, new Date(i.created), null, this)));
                 }
                 observer.complete();
             });
         });
     }
 
+    // TODO : next page ?
     search(query: string): Observable<Page[]> {
-        return undefined;
+        return this.runRequest(this.getSearchUrl(query)).pipe(
+            map(($: CheerioStatic) => {
+                const pages: Page[] = [];
+                const resultsEls = $('.cover_infos_title a:nth-child(2)');
+                for (let i = 0; i < resultsEls.length; i++) {
+                    const page = resultsEls[i];
+                    pages.push(new Page(page.firstChild.data, page.attribs.href, null, page.children[1].firstChild.data, null, null, null, this));
+                }
+                return pages;
+            })
+        );
     }
 
 }
