@@ -97,14 +97,13 @@ export class ZoneTelechargementWorld extends Site {
                 for (let i = 0; i < versionsEls.length; i++) {
                     const versionEl = versionsEls[i];
                     const versionInfosEls = versionEl.firstChild.children;
-                    const offset = versionInfosEls.length === 2 ? 0 : 1;
                     const version = new Page(
-                        pageDetail.title + (offset > 0 ? ' ' + this.findText(versionInfosEls[0]) : ''),
+                        pageDetail.title + this.findText(versionInfosEls[0]),
                         versionEl.attribs.href,
-                        this.findText(versionInfosEls[2 + offset]),
-                        this.findText(versionInfosEls[offset])
+                        this.findText(versionInfosEls[3]),
+                        this.findText(versionInfosEls[1])
                     );
-                    if (!version.quality) {
+                    if (!version.quality) { // If quality is in language
                         version.language = null;
                         version.quality = this.findText(versionInfosEls[2]);
                     }

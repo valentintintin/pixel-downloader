@@ -11,5 +11,7 @@ const sites: Site[] = [
 // sites.forEach(site => obsSites.push(site.search('doctor who')));
 // combineLatest(obsSites).pipe(map(res => [].concat(...res))).subscribe(res => console.log(res));
 
-// sites[1].getDetails('https://www.zone-telechargement.world/films/exclue/161972-venom.html').subscribe();
-sites[1].getDetails('https://www.zone-telechargement.world/series/series-vostfr-720p/139608-doctor-who-2005-saison-10.html').subscribe();
+// sites[1].getDetails('https://www.zone-telechargement.world/series/series-vostfr-720p/139608-doctor-who-2005-saison-10.html').subscribe();
+sites[1].getDetails('https://www.zone-telechargement.world/films/dvdrip-mkv-x264/163918-les-vikings.html\n').subscribe();
+
+console.log('end');
