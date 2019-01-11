@@ -9,6 +9,7 @@ import { prompt } from 'enquirer';
 import { Page } from './models/page';
 import { ZoneTelechargementWorld } from './sites/zone-telechargement-world';
 import { Utils } from './utils';
+import { NoLinkException } from './models/no-link.exception';
 import ora = require('ora');
 
 export class Cli {
@@ -25,17 +26,34 @@ export class Cli {
     }
 
     public run(argv: string[] = []) {
+        let query: string = null;
+        let host: string = null;
+        if (argv.length > 1) {
+            query = argv[1].toLowerCase().trim();
+        }
+        if (argv.length > 2) {
+            host = Utils.getHostFromUrl(argv[2]);
+        }
         switch (argv[0]) {
             case 'search':
-                this.doSearch(argv.length > 1 ? argv[1] : null, argv.length > 2 ? argv[2] : null).subscribe(() => this.main());
+                this.doSearch(query, host).subscribe(null, (err => {
+                    console.error(err.message);
+                    this.main();
+                }), () => this.main());
                 break;
 
             case 'recents':
-                this.doRecents().subscribe(() => this.main());
+                this.doRecents(query, host).subscribe(null, (err => {
+                    console.error(err.message);
+                    this.main();
+                }), () => this.main());
                 break;
 
             case 'addJdownload':
-                this.doJdownloaderFlush().subscribe(() => this.main());
+                this.doJdownloaderFlush().subscribe(null, (err => {
+                    console.error(err.message);
+                    this.main();
+                }), () => this.main());
                 break;
 
             default:
@@ -63,15 +81,17 @@ export class Cli {
             }
         ]).subscribe((choice: string[]) => {
             if (choice.length && choice[0]) {
-                this[choice[0]]().subscribe(
-                    null,
-                    (err) => console.error(err), () => this.main());
+                this[choice[0]]().subscribe(null, (err => {
+                    console.error(err.message);
+                    this.main();
+                }), () => this.main());
             } else {
                 console.log('Bye !');
                 process.exit(0);
             }
         }, error => {
-            console.error(error);
+            console.log('Bye !');
+            process.exit(0);
         });
     }
 
@@ -84,7 +104,7 @@ export class Cli {
 
         return start.pipe(
             switchMap(query => {
-                this.spinner.start('Searching in ' + this.sites.map(s => s.host).join(', '));
+                this.spinner.start('Searching in the first page of ' + this.sites.map(s => s.host).join(', '));
                 const obsSites: Observable<Page[]>[] = [];
                 this.sites.forEach(site => obsSites.push(site.search(query)));
                 return combineLatest(obsSites).pipe(map(res => [].concat(...res)));
@@ -126,14 +146,14 @@ export class Cli {
     }
 
 
-    private doRecents(): Observable<Link[]> {
+    private doRecents(query: string = null, host: string = null): Observable<Link[]> {
         this.spinner.start('Searching in ' + this.sites.map(s => s.host).join(', '));
 
         const obsSites: Observable<Page[]>[] = [];
         this.sites.forEach(site => obsSites.push(site.getRecents()));
 
         return combineLatest(obsSites).pipe(
-            map(res => [].concat(...res)),
+            map(res => [].concat(...res).filter((r: Page) => !query || r.title.toLowerCase().includes(query))),
             switchMap((result: Page[]) => {
                 this.spinner.succeed(result.length + ' pages found !');
                 return this.menu('Which one to choose', result.map(r => {
@@ -145,13 +165,16 @@ export class Cli {
             }),
             map(result => result[0]),
             switchMap((page: Page) => {
+                if (!page) {
+                    throw new NoLinkException('No link found :(');
+                }
                 console.log('Selected : ' + page.url);
                 this.spinner.start('Loading details');
                 return page.site.getDetails(page.url);
             }),
             switchMap((result: Page) => {
                 this.spinner.succeed((result.relatedPage.length + 1) + ' versions found !');
-                return this.selectPageVersionAndLinks(result);
+                return this.selectPageVersionAndLinks(result, host);
             })
         );
     }
@@ -192,10 +215,10 @@ export class Cli {
     private selectLinksToSave(links: Link[], hostUser: string = null): Observable<Link[]> {
         const hosts: HostLinksInterface[] = [];
         links.forEach(link => {
-            if (!hosts.find(h => h.host === link.host)) {
+            if (!hosts.find(h => h.host.includes(link.host))) {
                 hosts.push({
                     host: link.host,
-                    nb: links.filter(l => l.host === link.host).length
+                    nb: links.filter(l => l.host.includes(link.host)).length
                 });
             }
         });
@@ -205,17 +228,17 @@ export class Cli {
                 text: h.host + ' - ' + h.nb + ' links',
                 data: h.host
             };
-        }), true);
+        }).sort((a, b) => a.text < b.text ? -1 : 1), true);
 
         if (hostUser !== null) {
-            start = of([Utils.getHostFromUrl(hostUser)]);
+            start = of([hostUser]);
         } else if (hosts.length === 1) {
             start = of(hosts);
         }
 
         return start.pipe(
             switchMap((hostsSelected: string[]) => {
-                const linksByHost = links.filter(l => hostsSelected.find(h => h === l.host));
+                const linksByHost = links.filter(l => hostsSelected.find(h => l.host.includes(h)));
                 console.log(linksByHost.length + ' links found for ' + hostsSelected.join(', ') + ' !');
                 return this.menu('Save links ?', linksByHost.map(l => {
                         return {
@@ -225,6 +248,9 @@ export class Cli {
                     }).sort((a, b) => a.text < b.text ? -1 : 1), true
                 ).pipe(
                     map((linksToAdd: Link[]) => {
+                        if (!linksToAdd.length) {
+                            throw new NoLinkException('No link found :(');
+                        }
                         const linksAdded = this.jd.addLinksToQueue(linksToAdd);
                         console.log(linksAdded.length + ' links added to queue');
                         return linksAdded;
@@ -267,7 +293,7 @@ export class Cli {
                 observer.next(items.map(c => c.data));
                 observer.complete();
             }).catch(err => {
-                observer.error(err);
+                observer.error(new Error('Back to menu'));
                 observer.complete();
             });
         });
@@ -283,7 +309,7 @@ export class Cli {
                 observer.next(answer.typed);
                 observer.complete();
             }).catch(err => {
-                observer.error(err);
+                observer.error(new Error('Back to menu'));
                 observer.complete();
             });
         });
