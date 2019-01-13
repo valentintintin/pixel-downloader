@@ -10,6 +10,7 @@ import { Page } from './models/page';
 import { ZoneTelechargementWorld } from './sites/zone-telechargement-world';
 import { Utils } from './utils';
 import { NoLinkException } from './models/no-link.exception';
+import { AnnuaireTelechargement } from "./sites/annuaire-telechargement";
 import ora = require('ora');
 
 export class Cli {
@@ -17,7 +18,8 @@ export class Cli {
     private readonly jd = new Jdownloader(config.JDOWNLOADER_LOGIN, config.JDOWNLOADER_PASSWORD, config.JDOWNLOADER_DEVICE_NAME);
     private readonly sites: Site[] = [
         new ZoneTelechargementLol(),
-        new ZoneTelechargementWorld()
+        new ZoneTelechargementWorld(),
+        new AnnuaireTelechargement()
     ];
 
     private spinner = ora();
@@ -118,16 +120,7 @@ export class Cli {
                     };
                 }));
             }),
-            map(result => result[0]),
-            switchMap((page: Page) => {
-                console.log('Selected : ' + page.url);
-                this.spinner.start('Loading details');
-                return page.site.getDetails(page.url);
-            }),
-            switchMap((result: Page) => {
-                this.spinner.succeed((result.relatedPage.length + 1) + ' versions found !');
-                return this.selectPageVersionAndLinks(result, host);
-            })
+            switchMap(result => this.selectPageVersionAndLinks(result[0], host))
         );
     }
 
@@ -163,46 +156,45 @@ export class Cli {
                     };
                 }).sort((a, b) => (a.data.date as Date).getTime() > (b.data.date as Date).getTime() ? -1 : 1));
             }),
-            map(result => result[0]),
-            switchMap((page: Page) => {
-                if (!page) {
-                    throw new NoLinkException('No link found :(');
-                }
-                console.log('Selected : ' + page.url);
-                this.spinner.start('Loading details');
-                return page.site.getDetails(page.url);
-            }),
-            switchMap((result: Page) => {
-                this.spinner.succeed((result.relatedPage.length + 1) + ' versions found !');
-                return this.selectPageVersionAndLinks(result, host);
-            })
+            switchMap(result => this.selectPageVersionAndLinks(result[0], host))
         );
     }
 
     private selectPageVersionAndLinks(page: Page, host: string = null): Observable<Link[]> {
-        let start: Observable<Page> = this.menu('Which version do you want ?', [
-                {
-                    text: page.toString(),
-                    data: page
-                }
-            ].concat(page.relatedPage.map(r => {
-                return {
-                    text: r.toString(),
-                    data: r as Page
-                };
-            })).sort((a, b) => a.text < b.text ? -1 : 1)
-        ).pipe(map(result => result[0]));
-
-        if (page.relatedPage.length === 0) {
-            start = of(page);
+        if (!page) {
+            throw new NoLinkException('No link found :(');
         }
+        console.log('Selected : ' + page.url);
+        this.spinner.start('Loading details');
 
-        return start.pipe(
+        return page.site.getDetails(page.url).pipe(
+            switchMap((result: Page) => {
+                this.spinner.succeed((result.relatedPage.length + 1) + ' versions found !');
+
+                if (result.relatedPage.length === 0) {
+                    return of(result);
+                }
+                return this.menu('Which version do you want ?', [
+                        {
+                            text: result.toString(),
+                            data: result
+                        }
+                    ].concat(result.relatedPage.map(r => {
+                        return {
+                            text: r.toString(),
+                            data: r as Page
+                        };
+                    }).sort((a, b) => a.text < b.text ? -1 : 1))
+                ).pipe(map(result => result[0]));
+            }),
             switchMap((r: Page) => {
                 let links = of(r.fileLinks);
-                if (r !== page) {
-                    this.spinner.start('Loading links');
-                    links = r.site.getDetails(r.url).pipe(map((p: Page) => p.fileLinks));
+                if (r.url !== page.url) {
+                    this.spinner.start('Loading links ' + page.url);
+                    links = r.site.getDetails(r.url).pipe(map((p: Page) => {
+                        this.spinner.succeed();
+                        return p.fileLinks;
+                    }));
                 }
                 return links.pipe(tap((linksPossible) => this.spinner.succeed(linksPossible.length + ' links found !')));
             }),
@@ -251,6 +243,7 @@ export class Cli {
                         if (!linksToAdd.length) {
                             throw new NoLinkException('No link found :(');
                         }
+                        console.log('Links selected : ' + linksToAdd.map(l => l.toString() + ' : ' + l.url).join('\n'));
                         const linksAdded = this.jd.addLinksToQueue(linksToAdd);
                         console.log(linksAdded.length + ' links added to queue');
                         return linksAdded;

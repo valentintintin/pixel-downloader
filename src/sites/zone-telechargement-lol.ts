@@ -88,7 +88,7 @@ export class ZoneTelechargementLol extends Site {
                 const resultsEls = $('.mov > a:first-child');
                 for (let i = 0; i < resultsEls.length; i++) {
                     const page = resultsEls[i];
-                    pages.push(new Page(page.attribs.title, page.attribs.href, null, null, null, null, null, this));
+                    pages.push(new Page(page.attribs.title, page.attribs.href, this));
                 }
                 return pages;
             })
@@ -100,31 +100,12 @@ export class ZoneTelechargementLol extends Site {
             map(($: CheerioStatic) => {
                 const pageEl = $('h2')[0];
                 const pageElInfo = pageEl.next.next.children;
-                const pageDetail = new Page(
-                    pageEl.children[1].firstChild.data, // + (pageElInfo. > 2 ? ' ' + pageElInfo[2].data.trim() : ''),
-                    url + '',
-                    pageElInfo ? pageElInfo[0].data.split('|')[1] + '' : '',
-                    pageElInfo ? pageElInfo[0].data.split('|')[0] + '' : ''
-                );
-                pageDetail.site = this;
-                
+                const pageDetail = new Page(this.findText(pageEl) + ' ' + this.findText(pageElInfo), url, this);
+
                 const versionsEls = $('.otherversions a');
                 for (let i = 0; i < versionsEls.length; i++) {
                     const versionEl = versionsEls[i];
-                    const versionInfosEls = versionEl.firstChild.children;
-                    const offset = versionInfosEls.length === 2 ? 0 : 1;
-                    const version = new Page(
-                        pageDetail.title + (offset > 0 ? ' ' + this.findText(versionInfosEls[0]) : ''),
-                        versionEl.attribs.href,
-                        this.findText(versionInfosEls[1 + offset]),
-                        this.findText(versionInfosEls[offset])
-                    );
-                    if (!version.quality) {
-                        version.language = null;
-                        version.quality = this.findText(versionInfosEls[2]);
-                    }
-                    version.site = this;
-                    pageDetail.relatedPage.push(version);
+                    pageDetail.relatedPage.push(new Page(this.findText(versionEl), versionEl.attribs.href, this));
                 }
                 
                 pageDetail.fileLinks = [];
@@ -134,7 +115,7 @@ export class ZoneTelechargementLol extends Site {
                     const linkInfo = link.parent.parent;
                     pageDetail.fileLinks.push(new Link(
                         link.firstChild.data,
-                        link.attribs.href,
+                        this.baseUrl + link.attribs.href,
                         linkInfo.parent.parent.children[1].children[1].children[1].children[1].data,
                         linkInfo.children[7].firstChild.data,
                         linkInfo.children[5].firstChild.data,
@@ -151,7 +132,7 @@ export class ZoneTelechargementLol extends Site {
                 if (err) {
                     observer.error(err);
                 } else {
-                    observer.next(res.items.map(i => new Page(i.title, i.link, null, null, null, new Date(i.created), null, this)));
+                    observer.next(res.items.map(i => new Page(i.title, i.link, this, null, new Date(i.created))));
                 }
                 observer.complete();
             });

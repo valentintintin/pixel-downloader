@@ -24,7 +24,7 @@ export abstract class Site {
     public abstract getDetails(url: string): Observable<Page>;
 
     public abstract getRecents(): Observable<Page[]>;
-    
+
     protected getSearchUrl(query: string): string {
         const searchRequest = this.searchRequest.slice(0);
         searchRequest.find(r => r[0] === this.queryParameterName)[1] = query;
@@ -40,6 +40,10 @@ export abstract class Site {
             } else if (el.children && el.children.length) {
                 for (const i in el.children) {
                     text = text.concat(this.findText(el.children[+i]));
+                }
+            } else if (Array.isArray(el)) {
+                for (const i in el) {
+                    text = text.concat(this.findText(el[+i]));
                 }
             }
         }

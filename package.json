@@ -1,8 +1,9 @@
 {
   "name": "downloader",
-  "version": "1.0.0",
-  "description": "",
-  "main": "src/test.js",
+  "version": "1.1.2",
+  "description": "Tools to monitor and auto download from warez sites",
+  "repository": "https://github.com/valentintintin/download-sites-automation",
+  "main": "src/index.ts",
   "dependencies": {
     "@akanass/rx-http-request": "^3.1.0",
     "cheerio": "^1.0.0-rc.2",
@@ -22,6 +23,6 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Valentin Saugnier",
+  "author": "Valentin Saugnier @valentintintin",
   "license": "ISC"
 }
