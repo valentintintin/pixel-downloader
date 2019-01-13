@@ -24,8 +24,8 @@ export class Link {
     }
 
     public toString(): string {
-        return (this.host && this.host.length ? this.host : '') +
-            (this.title && this.title.length ? ' - ' + this.title : '') +
+        return (this.title && this.title.length ? this.title : '') +
+            (this.host && this.host.length ? ' - ' + this.host : '') +
             (this.size && this.size.length ? ' - ' + this.size : '') +
             (this.date ? ' - ' + this.date : '');
     }

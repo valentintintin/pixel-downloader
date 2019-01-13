@@ -21,6 +21,22 @@ export class Jdownloader {
         return false;
     }
 
+    public getLinksFromServer(): Observable<Link[]> {
+        return this.connect().pipe(
+            switchMap(() => {
+                return Observable.create(observer => {
+                    JdownloaderApi.queryLinks(this.deviceId).then(links => {
+                        observer.next(links.data.map(l => new Link(l.name, l.url)));
+                        observer.complete();
+                    }).catch((err) => {
+                        observer.error(err);
+                        observer.complete();
+                    });
+                });
+            })
+        );
+    }
+
     public addLinksToQueue(links: Link[]): Link[] {
         const linksAdded: Link[] = [];
         links.forEach(link => {
@@ -31,7 +47,7 @@ export class Jdownloader {
         return linksAdded;
     }
 
-    public flushQueue(): Observable<Link[]> {
+    public flushQueueToServer(): Observable<Link[]> {
         if (!this.linksToAdd.length) {
             return of(null);
         }
@@ -60,23 +76,29 @@ export class Jdownloader {
             });
         }));
     }
-    
-    private connect(): Observable<void> {
+
+    private connect(): Observable<number> {
         return Observable.create(observer => {
             if (!this.alreadyConnected) {
-                JdownloaderApi.connect('valentin.s.10@gmail.com', '***REMOVED***').then(() => {
+                JdownloaderApi.connect(this.username, this.password).then(() => {
                     this.alreadyConnected = true;
                     if (!this.deviceId) {
                         JdownloaderApi.listDevices().then(res => {
-                            this.deviceId = res.find(d => d.name === this.deviceName).id;
-                            observer.next();
-                            observer.complete();
+                            const device = res.find(d => d.name === this.deviceName);
+                            if (device) {
+                                this.deviceId = device.id;
+                                observer.next(this.deviceId);
+                                observer.complete();
+                            } else {
+                                observer.error(this.deviceName + ' not found');
+                                observer.complete();
+                            }
                         }).catch((err) => {
                             observer.error(err);
                             observer.complete();
                         });
                     } else {
-                        observer.next();
+                        observer.next(this.deviceId);
                         observer.complete();
                     }
                 }).catch((err) => {
@@ -85,7 +107,7 @@ export class Jdownloader {
                 });
             } else {
                 JdownloaderApi.reconnect().then(() => {
-                    observer.next();
+                    observer.next(this.deviceId);
                     observer.complete();
                 }).catch((err) => {
                     observer.error(err);

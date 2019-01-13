@@ -58,6 +58,13 @@ export class Cli {
                 }), () => this.main());
                 break;
 
+            case 'getJdownload':
+                this.doJdownloaderGet().subscribe(null, (err => {
+                    console.error(err.message);
+                    this.main();
+                }), () => this.main());
+                break;
+
             default:
                 this.main();
                 break;
@@ -77,6 +84,10 @@ export class Cli {
             {
                 text: 'Add links selected to your JDownloader',
                 data: 'doJdownloaderFlush'
+            },
+            {
+                text: 'Get links from your JDownloader',
+                data: 'doJdownloaderGet'
             },
             {
                 text: 'Exit'
@@ -131,13 +142,26 @@ export class Cli {
             observer.next();
             observer.complete();
         }).pipe(
-            switchMap(() => this.jd.flushQueue()),
+            switchMap(() => this.jd.flushQueueToServer()),
             tap(res => {
                 this.spinner.succeed('Result: ' + res);
             })
         );
     }
 
+    private doJdownloaderGet(): Observable<string[]> {
+        this.spinner = ora('Getting links from JDownloader');
+        return Observable.create(observer => {
+            this.spinner.start();
+            observer.next();
+            observer.complete();
+        }).pipe(
+            switchMap(() => this.jd.getLinksFromServer()),
+            tap((res: Link[]) => {
+                this.spinner.succeed('Links: ' + res.map(l => l.toString() + ' - ' + l.url).join('\n'));
+            })
+        );
+    }
 
     private doRecents(query: string = null, host: string = null): Observable<Link[]> {
         this.spinner.start('Searching in ' + this.sites.map(s => s.host).join(', '));

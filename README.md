@@ -5,13 +5,17 @@ Monitor and auto download are for a next version.
 
 ## Description
 
-This tool only search inside https://www.zone-telechargement2.lol and https://www.zone-telechargement.world yet.
+This tool only search inside :
+* https://www.zone-telechargement2.lol
+* https://www.zone-telechargement.world
+* https://www.annuaire-telechargement.com
 
 It can do :
 * Search inside website
 * Retrieve all versions of a link
 * Retrieve all download link
 * Send links selected to your JDownloader
+* Get links from your JDownloader
 
 ## Install & run
 
