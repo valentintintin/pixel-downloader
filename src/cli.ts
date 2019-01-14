@@ -10,7 +10,7 @@ import { Page } from './models/page';
 import { ZoneTelechargementWorld } from './sites/zone-telechargement-world';
 import { Utils } from './utils';
 import { NoLinkException } from './models/no-link.exception';
-import { AnnuaireTelechargement } from "./sites/annuaire-telechargement";
+import { AnnuaireTelechargement } from './sites/annuaire-telechargement';
 import ora = require('ora');
 
 export class Cli {
@@ -158,7 +158,8 @@ export class Cli {
         }).pipe(
             switchMap(() => this.jd.getLinksFromServer()),
             tap((res: Link[]) => {
-                this.spinner.succeed('Links: ' + res.map(l => l.toString() + ' - ' + l.url).join('\n'));
+                this.spinner.succeed(res.length + ' links found !');
+                console.log(res.map(l => l.toString() + ' - ' + l.url).join('\n'));
             })
         );
     }
