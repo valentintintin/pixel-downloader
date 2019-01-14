@@ -8,6 +8,8 @@ import { combineLatest, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Page } from './models/page';
 import * as express from 'express';
+import { PageDto } from './models/dto/page-dto';
+import { SiteNotFoundException } from './models/site-not-found.exception';
 
 const app: express.Application = express();
 
@@ -26,7 +28,7 @@ app.get('/recents', (req, res) => {
     const obsSites: Observable<Page[]>[] = [];
     sites.forEach(site => obsSites.push(site.getRecents()));
 
-    const query = req.query.search ? req.query.search : null;
+    const query = req.query.search;
 
     console.log('Start /recents?query=' + query);
 
@@ -34,10 +36,45 @@ app.get('/recents', (req, res) => {
         map(res => [].concat(...res).filter((r: Page) => !query || r.title.toLowerCase().includes(query)))
     ).subscribe(results => {
         console.log('Stop /recents?query=' + query + ' - ' + results.length + ' results');
-        res.json(results.map((s: Page) => {
-            s.site = null; // bad !!
-            return s;
-        }));
+        res.json(results.map((p: Page) => PageDto.fromObject(p)));
+    });
+});
+
+app.get('/search', (req, res) => {
+    const query = req.query.query;
+
+    const obsSites: Observable<Page[]>[] = [];
+    sites.forEach(site => obsSites.push(site.search(query)));
+
+    console.log('Start /search?query=' + query);
+
+    combineLatest(obsSites).pipe(
+        map(res => [].concat(...res).filter((r: Page) => !query || r.title.toLowerCase().includes(query)))
+    ).subscribe(results => {
+        console.log('Stop /search?query=' + query + ' - ' + results.length + ' results');
+        res.json(results.map((p: Page) => PageDto.fromObject(p)));
+    });
+});
+
+app.get('/details', (req, res) => {
+    const link = req.query.link;
+
+    console.log('Start /details/' + req.params.link);
+
+    let site: Site = null;
+    if (link.includes('zone-telechargement2.lol')) {
+        site = sites[0];
+    } else if (link.includes('zone-telechargement.world')) {
+        site = sites[1];
+    } else if (link.includes('annuaire-telechargement.com')) {
+        site = sites[2];
+    } else {
+        throw new SiteNotFoundException(link);
+    }
+
+    site.getDetails(link).subscribe(result => {
+        console.log('Stop /details/' + req.params.link);
+        res.json(PageDto.fromObject(result));
     });
 });
 
