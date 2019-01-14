@@ -177,9 +177,9 @@ export class Cli {
                 return this.menu('Which one to choose', result.map(r => {
                     return {
                         data: r,
-                        text: r.toString() + ' - ' + (r.date as Date).toLocaleString() + ' - ' + r.site.host
+                        text: r.toString() + ' - ' + r.site.host
                     };
-                }).sort((a, b) => (a.data.date as Date).getTime() > (b.data.date as Date).getTime() ? -1 : 1));
+                }).sort((a, b) => a.text < b.text ? -1 : 1));
             }),
             switchMap(result => this.selectPageVersionAndLinks(result[0], host))
         );

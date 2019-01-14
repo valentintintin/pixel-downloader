@@ -97,8 +97,10 @@ export class ZoneTelechargementWorld extends Site {
                 const links = $('.ilinx_global a');
                 for (let i = 0; i < links.length; i++) {
                     const link = links[i];
-                    const linkInfo = link.parent.prev.prev.children;
-                    pageDetail.fileLinks.push(new Link(link.children[0].data, link.attribs.href, linkInfo[0].firstChild.data));
+                    const linkInfo = link.parent.prev.prev;
+                    if (!link.attribs.href.includes('javascript')) {
+                        pageDetail.fileLinks.push(new Link(link.firstChild.data, link.attribs.href, this.findText(linkInfo)));
+                    }
                 }
                 return pageDetail;
             })
@@ -111,7 +113,7 @@ export class ZoneTelechargementWorld extends Site {
                 if (err) {
                     observer.error(err);
                 } else {
-                    observer.next(res.items.map(i => new Page(i.title, i.link, this, null, new Date(i.created))));
+                    observer.next(res.items.map(i => new Page(i.title, i.link, this)));
                 }
                 observer.complete();
             });

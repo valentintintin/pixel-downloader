@@ -113,7 +113,7 @@ export class AnnuaireTelechargement extends Site {
                 if (err) {
                     observer.error(err);
                 } else {
-                    observer.next(res.items.map(i => new Page(i.title, i.link, this, null, new Date(i.created))));
+                    observer.next(res.items.map(i => new Page(i.title, i.link, this)));
                 }
                 observer.complete();
             });

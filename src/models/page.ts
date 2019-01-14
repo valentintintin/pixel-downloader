@@ -14,10 +14,8 @@ export class Page extends Link {
         url: string,
         public site: Site = null,
         host: string = null,
-        date: Date | string = null,
-        size: string = null
     ) {
-        super(title, url, host, date, size);
+        super(title, url, host);
     }
 
     public toString(): string {

@@ -116,9 +116,7 @@ export class ZoneTelechargementLol extends Site {
                     pageDetail.fileLinks.push(new Link(
                         link.firstChild.data,
                         this.baseUrl + link.attribs.href,
-                        linkInfo.parent.parent.children[1].children[1].children[1].children[1].data,
-                        linkInfo.children[7].firstChild.data,
-                        linkInfo.children[5].firstChild.data,
+                        linkInfo.parent.parent.children[1].children[1].children[1].children[1].data
                     ));
                 }
                 return pageDetail;
@@ -132,7 +130,7 @@ export class ZoneTelechargementLol extends Site {
                 if (err) {
                     observer.error(err);
                 } else {
-                    observer.next(res.items.map(i => new Page(i.title, i.link, this, null, new Date(i.created))));
+                    observer.next(res.items.map(i => new Page(i.title, i.link, this)));
                 }
                 observer.complete();
             });

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Downloader dashboard</title>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.5/angular.min.js"></script>
+
+    <style>
+        li {
+            cursor: pointer;
+        }
+
+        li:hover {
+            color: blue;
+            text-decoration: underline;
+        }
+
+        main {
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body ng-app="app" ng-controller="ctrl">
+
+<head>
+    <h1>Downloader</h1>
+    <form>
+        <label for="query">Search query</label><input type="text" id="query" name="query" ng-model="query"/>
+        <button type="button" ng-click="search()">Search</button>
+        <button type="button" ng-click="recents()">Recents</button>
+    </form>
+    <div ng-if="loading">
+        Loading in progress ...
+    </div>
+</head>
+
+<main>
+    <div id="results">
+        <h2>Résults :</h2>
+        <ul>
+            <li ng-repeat="page in resultPages" ng-click="details(page.url)">{{ page.title }} - {{ page.host }}</li>
+        </ul>
+    </div>
+
+    <div id="detail" ng-if="detail">
+        <h2>Détails :</h2>
+
+        <h3>
+            {{ detail.title }}
+        </h3>
+        <div>
+            Page: <a target="_blank" href="{{ detail.url }}">{{ detail.url }}</a>
+        </div>
+        <div>
+            <h4>Versions</h4>
+            <ul>
+                <li ng-repeat="version in detail.relatedPage" ng-click="details(version.url)">{{ version.title }}
+                </li>
+            </ul>
+        </div>
+        <div>
+            <h4>Links</h4>
+            <div ng-repeat="(host, links) in detail.fileLinksByHost">
+                <h5>{{ host }}</h5>
+                <div ng-repeat="link in links">
+                    <a target="_blank" href="{{ link.url }}">{{ link.title ? link.title : 'Télécharger' }}</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+</body>
+
+<script>
+    var app = angular.module("app", []);
+    app.controller("ctrl", function ($scope, $http) {
+
+        $scope.query = '';
+        $scope.resultPages = [];
+        $scope.detail = null;
+        $scope.loading = false;
+
+        $scope.recents = function () {
+            $scope.loading = true;
+            $http.get("/recents?query=" + $scope.query)
+                .then(function (response) {
+                    $scope.loading = false;
+                    $scope.resultPages = response.data;
+                });
+        };
+
+        $scope.search = function () {
+            $scope.loading = true;
+            $http.get("/search?query=" + $scope.query)
+                .then(function (response) {
+                    $scope.loading = false;
+                    $scope.resultPages = response.data;
+                });
+        };
+
+        $scope.details = function (url) {
+            $scope.loading = true;
+            $http.get("/details?link=" + url)
+                .then(function (response) {
+                    $scope.loading = false;
+                    $scope.detail = response.data;
+                    $scope.detail.fileLinksByHost = $scope.detail.fileLinks.reduce(function (rv, x) {
+                        (rv[x['host']] = rv[x['host']] || []).push(x);
+                        return rv;
+                    }, {});
+                });
+        };
+
+        $scope.recents();
+    });
+</script>
+
+</html>

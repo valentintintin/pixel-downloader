@@ -10,6 +10,7 @@ import { Page } from './models/page';
 import * as express from 'express';
 import { PageDto } from './models/dto/page-dto';
 import { SiteNotFoundException } from './models/site-not-found.exception';
+import * as path from 'path';
 
 const app: express.Application = express();
 
@@ -21,14 +22,14 @@ const sites: Site[] = [
 ];
 
 app.get('/', (req, res) => {
-    res.send('Hello World!');
+    res.sendFile(path.join(__dirname + '/../assets/index.html'));
 });
 
 app.get('/recents', (req, res) => {
     const obsSites: Observable<Page[]>[] = [];
     sites.forEach(site => obsSites.push(site.getRecents()));
 
-    const query = req.query.search;
+    const query = req.query.query;
 
     console.log('Start /recents?query=' + query);
 
@@ -49,7 +50,7 @@ app.get('/search', (req, res) => {
     console.log('Start /search?query=' + query);
 
     combineLatest(obsSites).pipe(
-        map(res => [].concat(...res).filter((r: Page) => !query || r.title.toLowerCase().includes(query)))
+        map(res => [].concat(...res))
     ).subscribe(results => {
         console.log('Stop /search?query=' + query + ' - ' + results.length + ' results');
         res.json(results.map((p: Page) => PageDto.fromObject(p)));
