@@ -56,7 +56,7 @@ export class Jdownloader {
                 JdownloaderApi.queryLinks(this.deviceId).then(links => {
                     const currentLinks: string[] = links.data.map(l => l.url);
                     const linksToAdd: string[] = this.linksToAdd.map(l => l.url).filter(l => currentLinks.indexOf(l) === -1);
-                    JdownloaderApi.addLinks(linksToAdd, this.deviceId, false).then(() => {
+                    JdownloaderApi.addLinks(linksToAdd, this.deviceId, true).then(() => {
                         this.linksToAdd.length = 0;
                         this.disconnect().then(() => {
                             observer.next(linksToAdd);

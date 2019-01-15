@@ -11,8 +11,11 @@ import * as express from 'express';
 import { PageDto } from './models/dto/page-dto';
 import { SiteNotFoundException } from './models/site-not-found.exception';
 import * as path from 'path';
+import { LinkDto } from './models/dto/link-dto';
+import { Link } from './models/link';
 
 const app: express.Application = express();
+app.use(express.json());
 
 const jd = new Jdownloader(config.JDOWNLOADER_LOGIN, config.JDOWNLOADER_PASSWORD, config.JDOWNLOADER_DEVICE_NAME);
 const sites: Site[] = [
@@ -23,6 +26,19 @@ const sites: Site[] = [
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname + '/../assets/index.html'));
+});
+
+app.get('/jdownloader/get', (req, res) => {
+    jd.getLinksFromServer().subscribe(results => res.json(results));
+});
+
+app.post('/jdownloader/add', (req, res) => {
+    jd.addLinkToQueue(new Link(req.body.title, req.body.url, req.body.host));
+    res.json(jd.linksToAdd.map(l => LinkDto.fromObject(l)));
+});
+
+app.get('/jdownloader/flush', (req, res) => {
+    jd.flushQueueToServer().subscribe(results => res.json(results));
 });
 
 app.get('/recents', (req, res) => {

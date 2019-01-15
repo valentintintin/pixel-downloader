@@ -16,7 +16,7 @@
             text-decoration: underline;
         }
 
-        main {
+        header, main {
             display: flex;
             justify-content: space-between;
         }
@@ -24,17 +24,39 @@
 </head>
 <body ng-app="app" ng-controller="ctrl">
 
-<head>
-    <h1>Downloader</h1>
-    <form>
-        <label for="query">Search query</label><input type="text" id="query" name="query" ng-model="query"/>
-        <button type="button" ng-click="search()">Search</button>
-        <button type="button" ng-click="recents()">Recents</button>
-    </form>
+<h1>Downloader</h1>
+
+<header>
+    <div>
+        <h2>Search</h2>
+        <form>
+            <label for="query">Search query</label><input type="text" id="query" name="query" ng-model="query"/>
+            <button type="button" ng-click="search()">Search</button>
+            <button type="button" ng-click="recents()">Recents</button>
+        </form>
+    </div>
+    <div>
+        <h2>Jdownloader</h2>
+        <div>
+            <h3>Jdownloader list</h3>
+            <div ng-repeat="link in jdownloaderGet">
+                <a target="_blank" href="{{ link.url }}">{{ link.title ? link.title : 'Download' }}</a>
+            </div>
+        </div>
+        <div>
+            <h3>Queue to add</h3>
+            <div ng-repeat="link in jdownloaderQueue">
+                <a target="_blank" href="{{ link.url }}">{{ link.title ? link.title : 'Download' }}</a>
+            </div>
+        </div>
+        <div>
+            <button ng-click="jdownloaderFlush()">Send to server</button>
+        </div>
+    </div>
     <div ng-if="loading">
         Loading in progress ...
     </div>
-</head>
+</header>
 
 <main>
     <div id="results">
@@ -65,7 +87,8 @@
             <div ng-repeat="(host, links) in detail.fileLinksByHost">
                 <h5>{{ host }}</h5>
                 <div ng-repeat="link in links">
-                    <a target="_blank" href="{{ link.url }}">{{ link.title ? link.title : 'Télécharger' }}</a>
+                    <a target="_blank" href="{{ link.url }}">{{ link.title ? link.title : 'Download' }}</a>
+                    <button ng-click="jdownloaderAdd(link)">Add to queue</button>
                 </div>
             </div>
         </div>
@@ -82,6 +105,8 @@
         $scope.resultPages = [];
         $scope.detail = null;
         $scope.loading = false;
+        $scope.jdownloaderQueue = [];
+        $scope.jdownloaderList = [];
 
         $scope.recents = function () {
             $scope.loading = true;
@@ -114,7 +139,36 @@
                 });
         };
 
+        $scope.jdownloaderGet = function () {
+            $scope.loading = true;
+            $http.get("/jdownloader/get")
+                .then(function (response) {
+                    $scope.loading = false;
+                    $scope.jdownloaderList = response.data;
+                });
+        };
+
+        $scope.jdownloaderAdd = function (link) {
+            $scope.loading = true;
+            $http.post("/jdownloader/add", JSON.stringify(link))
+                .then(function (response) {
+                    $scope.loading = false;
+                    $scope.jdownloaderQueue = response.data;
+                });
+        };
+
+        $scope.jdownloaderFlush = function () {
+            $scope.loading = true;
+            $http.get("/jdownloader/flush")
+                .then(function (response) {
+                    $scope.loading = false;
+                    $scope.jdownloaderQueue = [];
+                    $scope.jdownloaderGet();
+                });
+        };
+
         $scope.recents();
+        $scope.jdownloaderGet();
     });
 </script>
 

@@ -12,6 +12,8 @@ export class Link {
 
         if (host) {
             this.host = Utils.getHostFromUrl(host);
+        } else {
+            this.host = 'unknown';
         }
     }
 
