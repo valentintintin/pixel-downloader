@@ -2,7 +2,7 @@ import { Page } from '../models/page';
 import { Observable } from 'rxjs';
 import { RxHR } from '@akanass/rx-http-request';
 import { catchError, filter, map } from 'rxjs/operators';
-import { Utils } from "../utils";
+import { Utils } from '../utils';
 import Cheerio = require('cheerio');
 
 export abstract class Site {
@@ -47,7 +47,7 @@ export abstract class Site {
                 }
             }
         }
-        return text.length > 0 ? text.join(' ') : '';
+        return text.length > 0 ? text.join(' ').trim() : '';
     }
     
     protected runRequest(url: string): Observable<{} | CheerioStatic> {
