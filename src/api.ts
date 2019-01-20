@@ -13,6 +13,7 @@ import { SiteNotFoundException } from './models/site-not-found.exception';
 import * as path from 'path';
 import { LinkDto } from './models/dto/link-dto';
 import { Link } from './models/link';
+import { ExtremeDownload } from './sites/extreme-download';
 
 export class Api {
 
@@ -21,7 +22,8 @@ export class Api {
     private readonly sites: Site[] = [
         new ZoneTelechargementLol(),
         new ZoneTelechargementWorld(),
-        new AnnuaireTelechargement()
+        new AnnuaireTelechargement(),
+        new ExtremeDownload()
     ];
 
     constructor() {
@@ -78,8 +80,10 @@ export class Api {
                 site = this.sites[0];
             } else if (link.includes('zone-telechargement.world')) {
                 site = this.sites[1];
-            } else if (link.includes('annuaire-telechargement.com')) {
+            } else if (link.includes('annuaire-telechargement')) {
                 site = this.sites[2];
+            } else if (link.includes('extreme-download')) {
+                site = this.sites[3];
             } else {
                 throw new SiteNotFoundException(link);
             }
@@ -92,7 +96,7 @@ export class Api {
         this.app.use((error, req, res, next) => {
             console.error('Error : ' + error);
             res.statusCode = 500;
-            res.json(error);
+            res.send(error.message);
         });
     }
 

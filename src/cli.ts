@@ -11,6 +11,7 @@ import { ZoneTelechargementWorld } from './sites/zone-telechargement-world';
 import { Utils } from './utils';
 import { NoLinkException } from './models/no-link.exception';
 import { AnnuaireTelechargement } from './sites/annuaire-telechargement';
+import { ExtremeDownload } from './sites/extreme-download';
 import ora = require('ora');
 
 export class Cli {
@@ -19,7 +20,8 @@ export class Cli {
     private readonly sites: Site[] = [
         new ZoneTelechargementLol(),
         new ZoneTelechargementWorld(),
-        new AnnuaireTelechargement()
+        new AnnuaireTelechargement(),
+        new ExtremeDownload()
     ];
 
     private spinner = ora();
@@ -165,7 +167,7 @@ export class Cli {
     }
 
     private doRecents(query: string = null, host: string = null): Observable<Link[]> {
-        this.spinner.start('Searching in ' + this.sites.map(s => s.host).join(', '));
+        this.spinner.start('Getting recents in ' + this.sites.map(s => s.host).join(', '));
 
         const obsSites: Observable<Page[]>[] = [];
         this.sites.forEach(site => obsSites.push(site.getRecents()));

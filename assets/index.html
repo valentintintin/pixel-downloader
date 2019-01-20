@@ -29,7 +29,7 @@
 <header>
     <div>
         <h2>Search</h2>
-        <form>
+        <form ng-keydown="$event.keyCode === 13 && search()">
             <label for="query">Search query</label><input type="text" id="query" name="query" ng-model="query"/>
             <button type="button" ng-click="search()">Search</button>
             <button type="button" ng-click="recents()">Recents</button>
