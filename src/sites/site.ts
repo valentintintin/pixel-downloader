@@ -13,9 +13,6 @@ export abstract class Site {
                           protected pageSearchRequest: string,
                           protected readonly searchRequest: string[][],
                           protected readonly queryParameterName: string) {
-        if (this.baseUrl[this.baseUrl.length - 1] !== '/') {
-            // this.baseUrl += '/'; // TODO usefull ?
-        }
         this.host = Utils.getHostFromUrl(this.baseUrl);
     }
 

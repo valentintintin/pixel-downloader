@@ -122,7 +122,7 @@ export class ExtremeDownload extends Site {
 
     getRecents(): Observable<Page[]> {
         return Observable.create((observer) => {
-            RssToJson.load(this.baseUrl + 'rss.xml', (err, res) => {
+            RssToJson.load(this.baseUrl + '/rss.xml', (err, res) => {
                 if (err) {
                     observer.error(err);
                 } else {
