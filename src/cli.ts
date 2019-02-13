@@ -10,7 +10,6 @@ import { Page } from './models/page';
 import { ZoneTelechargementWorld } from './sites/zone-telechargement-world';
 import { Utils } from './utils';
 import { NoLinkException } from './models/no-link.exception';
-import { AnnuaireTelechargement } from './sites/annuaire-telechargement';
 import { ExtremeDownload } from './sites/extreme-download';
 import ora = require('ora');
 
@@ -20,7 +19,7 @@ export class Cli {
     private readonly sites: Site[] = [
         new ZoneTelechargementLol(),
         new ZoneTelechargementWorld(),
-        new AnnuaireTelechargement(),
+        // new AnnuaireTelechargement(),
         new ExtremeDownload()
     ];
 

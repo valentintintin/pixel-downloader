@@ -3,7 +3,6 @@ import * as config from './config';
 import { Site } from './sites/site';
 import { ZoneTelechargementLol } from './sites/zone-telechargement-lol';
 import { ZoneTelechargementWorld } from './sites/zone-telechargement-world';
-import { AnnuaireTelechargement } from './sites/annuaire-telechargement';
 import { combineLatest, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Page } from './models/page';
@@ -22,7 +21,7 @@ export class Api {
     private readonly sites: Site[] = [
         new ZoneTelechargementLol(),
         new ZoneTelechargementWorld(),
-        new AnnuaireTelechargement(),
+        // new AnnuaireTelechargement(),
         new ExtremeDownload()
     ];
 
