@@ -8,7 +8,7 @@ import RssToJson = require('rss-to-json');
 export class AnnuaireTelechargement extends Site {
 
     constructor() {
-        super('https://www.annuaire-telechargement.com', 'index.php', [
+        super('https://wvvvv.annuaire-telechargement.com', 'index.php', [
             [
                 'do',
                 'search'

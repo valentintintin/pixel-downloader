@@ -8,7 +8,7 @@ import RssToJson = require('rss-to-json');
 export class ZoneTelechargementLol extends Site {
     
     constructor() {
-        super('https://www.zone-telechargement2.lol', 'index.php', [
+        super('https://ww11.zone-telechargement.lol', 'index.php', [
             [
                 'do',
                 'search'
