@@ -31,7 +31,7 @@ export class Jdownloader {
                         observer.error(err);
                         observer.complete();
                     });
-                });
+                }) as Observable<Link[]>;
             })
         );
     }
@@ -72,7 +72,7 @@ export class Jdownloader {
                     observer.error(err);
                     observer.complete();
                 });
-            });
+            }) as Observable<Link[]>;
         }));
     }
 
