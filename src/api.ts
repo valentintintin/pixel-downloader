@@ -87,10 +87,10 @@ export class Api {
                 site = this.sites[0];
             } else if (link.includes('zone-telechargement.world')) {
                 site = this.sites[1];
-            } else if (link.includes('annuaire-telechargement')) {
+            } /*else if (link.includes('annuaire-telechargement')) {
                 site = this.sites[2];
-            } else if (link.includes('extreme-download')) {
-                site = this.sites[3];
+            } */ else if (link.includes('extreme-download')) {
+                site = this.sites[2];
             } else {
                 throw new SiteNotFoundException(link);
             }
