@@ -86,6 +86,7 @@
             <h4>Links</h4>
             <div ng-repeat="(host, links) in detail.fileLinksByHost">
                 <h5>{{ host }}</h5>
+                <button ng-click="jdownloaderAdd(links)">Add all to queue</button>
                 <div ng-repeat="link in links">
                     <a target="_blank" href="{{ link.url }}">{{ link.title ? link.title : 'Download' }}</a>
                     <button ng-click="jdownloaderAdd(link)">Add to queue</button>
@@ -148,6 +149,15 @@
                 });
         };
 
+        $scope.jdownloaderGetQueue = function () {
+            $scope.loading = true;
+            $http.get("/jdownloader/get-queue")
+                .then(function (response) {
+                    $scope.loading = false;
+                    $scope.jdownloaderQueue = response.data;
+                });
+        };
+
         $scope.jdownloaderAdd = function (link) {
             $scope.loading = true;
             $http.post("/jdownloader/add", JSON.stringify(link))
@@ -169,6 +179,7 @@
 
         $scope.recents();
         $scope.jdownloaderGet();
+        $scope.jdownloaderGetQueue();
     });
 </script>
 

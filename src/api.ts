@@ -37,8 +37,16 @@ export class Api {
             this.jd.getLinksFromServer().subscribe(results => res.json(results), err => next(err));
         });
 
+        this.app.get('/jdownloader/get-queue', (req, res, next) => {
+            res.json(this.jd.linksToAdd.map(l => LinkDto.fromObject(l)));
+        });
+
         this.app.post('/jdownloader/add', (req, res, next) => {
-            this.jd.addLinkToQueue(new Link(req.body.title, req.body.url, req.body.host));
+            if (Array.isArray(req.body)) {
+                this.jd.addLinksToQueue((req.body as any[]).map(l => new Link(l.title, l.url, l.host)));
+            } else {
+                this.jd.addLinkToQueue(new Link(req.body.title, req.body.url, req.body.host));
+            }
             res.json(this.jd.linksToAdd.map(l => LinkDto.fromObject(l)));
         });
 
@@ -76,7 +84,7 @@ export class Api {
             const link = req.query.link;
 
             let site: Site = null;
-            if (link.includes('zone-telechargement2.lol')) {
+            if (link.includes('zone-telechargement.lol')) {
                 site = this.sites[0];
             } else if (link.includes('zone-telechargement.world')) {
                 site = this.sites[1];

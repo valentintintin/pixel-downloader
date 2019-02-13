@@ -6,10 +6,9 @@ import JdownloaderApi = require('jdownloader-api');
 export class Jdownloader {
 
     public linksToAdd: Link[] = [];
-    
-    private alreadyConnected = false;
+
     private deviceId: string;
-    
+
     constructor(private username: string, private password: string, private deviceName: string) {
     }
 
@@ -79,44 +78,33 @@ export class Jdownloader {
 
     private connect(): Observable<number> {
         return Observable.create(observer => {
-            if (!this.alreadyConnected) {
-                JdownloaderApi.connect(this.username, this.password).then(() => {
-                    this.alreadyConnected = true;
-                    if (!this.deviceId) {
-                        JdownloaderApi.listDevices().then(res => {
-                            const device = res.find(d => d.name === this.deviceName);
-                            if (device) {
-                                this.deviceId = device.id;
-                                observer.next(this.deviceId);
-                                observer.complete();
-                            } else {
-                                observer.error(this.deviceName + ' not found');
-                                observer.complete();
-                            }
-                        }).catch((err) => {
-                            observer.error(err);
+            JdownloaderApi.connect(this.username, this.password).then(() => {
+                if (!this.deviceId) {
+                    JdownloaderApi.listDevices().then(res => {
+                        const device = res.find(d => d.name === this.deviceName);
+                        if (device) {
+                            this.deviceId = device.id;
+                            observer.next(this.deviceId);
                             observer.complete();
-                        });
-                    } else {
-                        observer.next(this.deviceId);
+                        } else {
+                            observer.error(this.deviceName + ' not found');
+                            observer.complete();
+                        }
+                    }).catch((err) => {
+                        observer.error(err);
                         observer.complete();
-                    }
-                }).catch((err) => {
-                    observer.error(err);
-                    observer.complete();
-                });
-            } else {
-                JdownloaderApi.reconnect().then(() => {
+                    });
+                } else {
                     observer.next(this.deviceId);
                     observer.complete();
-                }).catch((err) => {
-                    observer.error(err);
-                    observer.complete();
-                });
-            }
+                }
+            }).catch((err) => {
+                observer.error(err);
+                observer.complete();
+            });
         });
     }
-    
+
     private disconnect(): Promise<any> {
         return JdownloaderApi.disconnect();
     }
