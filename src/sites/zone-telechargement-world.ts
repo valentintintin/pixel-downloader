@@ -3,12 +3,11 @@ import { Observable } from 'rxjs';
 import { Page } from '../models/page';
 import { map } from 'rxjs/operators';
 import { Link } from '../models/link';
-import RssToJson = require('rss-to-json');
 
 export class ZoneTelechargementWorld extends Site {
 
     constructor() {
-        super('https://www.zone-telechargement.world', 'index.php', [
+        super('https://www.zone-telechargement1.world', 'index.php', [
             [
                 'do',
                 'search'
@@ -83,41 +82,31 @@ export class ZoneTelechargementWorld extends Site {
     getDetails(url: string): Observable<Page> {
         return this.runRequest(url).pipe(
             map(($: CheerioStatic) => {
-                const pageEl = $('.corps h1')[0];
-                const pageElInfo = $('.corps h2')[0];
-                const pageDetail = new Page(pageEl.firstChild.data + ' ' + this.findText(pageElInfo.firstChild), url, this);
+                const pageEl = $('.corps h1');
+                const pageElInfo = $('.corps h2');
+                const pageImg = $('.corps center img').first();
+                const pageDetail = new Page(pageEl.text().trim() + ' ' + pageElInfo.text().trim(), url, this, null, this.baseUrl + '/' + pageImg.attr('src'));
 
-                const versionsEls = $('.otherversions a');
-                for (let i = 0; i < versionsEls.length; i++) {
-                    const versionEl = versionsEls[i];
-                    pageDetail.relatedPage.push(new Page(this.findText(versionEl), versionEl.attribs.href, this));
-                }
+                $('.otherversions a').each((index, element) => {
+                    pageDetail.relatedPage.push(new Page(this.findText(element), element.attribs.href, this));
+                });
 
                 pageDetail.fileLinks = [];
-                const links = $('.ilinx_global a');
-                for (let i = 0; i < links.length; i++) {
-                    const link = links[i];
-                    const linkInfo = link.parent.prev.prev;
-                    if (!link.attribs.href.includes('javascript')) {
-                        pageDetail.fileLinks.push(new Link(link.firstChild.data, link.attribs.href, this.findText(linkInfo)));
+                $('.ilinx_global a').each((index, element) => {
+                    const linkInfo = element.parent.prev.prev;
+                    if (!element.attribs.href.includes('javascript')) {
+                        pageDetail.fileLinks.push(new Link(element.firstChild.data, element.attribs.href, this.findText(linkInfo)));
                     }
-                }
+                });
                 return pageDetail;
             })
         );
     }
 
     getRecents(): Observable<Page[]> {
-        return Observable.create((observer) => {
-            RssToJson.load(this.baseUrl + '/rss.xml', (err, res) => {
-                if (err) {
-                    observer.error(err);
-                } else {
-                    observer.next(res.items.map(i => new Page(i.title, i.link, this)));
-                }
-                observer.complete();
-            });
-        });
+        return this.runRss(this.baseUrl + '/rss.xml').pipe(
+            map(items => items.map(i => new Page(i.title, i.link, this)))
+        );
     }
 
     // TODO : next page ?
@@ -125,11 +114,9 @@ export class ZoneTelechargementWorld extends Site {
         return this.runRequest(this.getSearchUrl(query)).pipe(
             map(($: CheerioStatic) => {
                 const pages: Page[] = [];
-                const resultsEls = $('.cover_infos_title a:nth-child(2)');
-                for (let i = 0; i < resultsEls.length; i++) {
-                    const page = resultsEls[i];
-                    pages.push(new Page(page.firstChild.data + ' ' + this.findText(page.children[1]), page.attribs.href, this));
-                }
+                $('.cover_infos_title a:nth-child(2)').each((index, element) => {
+                    pages.push(new Page(element.firstChild.data + ' ' + this.findText(element.children[1]), element.attribs.href, this, null));
+                });
                 return pages;
             })
         );

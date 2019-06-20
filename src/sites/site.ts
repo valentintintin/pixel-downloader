@@ -1,9 +1,10 @@
 import { Page } from '../models/page';
 import { Observable } from 'rxjs';
-import { RxHR } from '@akanass/rx-http-request';
-import { catchError, filter, map } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { Utils } from '../utils';
 import Cheerio = require('cheerio');
+import RssToJson = require('rss-to-json');
+import cloudscraper = require('cloudscraper');
 
 export abstract class Site {
 
@@ -48,13 +49,27 @@ export abstract class Site {
     }
     
     protected runRequest(url: string): Observable<{} | CheerioStatic> {
-        return RxHR.get(url).pipe(
-            filter(data => data.response.statusCode === 200),
-            map(data => Cheerio.load(data.body)),
+        return new Observable<string>(observer => {
+            cloudscraper.get(url).then(data => observer.next(data), error => observer.error(error));
+        }).pipe(
+            map(data => Cheerio.load(data)),
             catchError(err => {
                 console.error(err);
                 return err;
             })
         );
+    }
+
+    protected runRss(url: string): Observable<any[]> {
+        return new Observable<any[]>(observer => {
+            RssToJson.load(url, (err, res) => {
+                if (err) {
+                    observer.error(err);
+                } else {
+                    observer.next(res.items);
+                }
+                observer.complete();
+            })
+        });
     }
 }

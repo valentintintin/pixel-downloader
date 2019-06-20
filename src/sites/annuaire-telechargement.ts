@@ -3,12 +3,11 @@ import { Observable } from 'rxjs';
 import { Page } from '../models/page';
 import { map } from 'rxjs/operators';
 import { Link } from '../models/link';
-import RssToJson = require('rss-to-json');
 
 export class AnnuaireTelechargement extends Site {
 
     constructor() {
-        super('https://wvvvv.annuaire-telechargement.com', 'index.php', [
+        super('https://www.annuaire-telechargement.cc', 'index.php', [
             [
                 'do',
                 'search'
@@ -19,7 +18,7 @@ export class AnnuaireTelechargement extends Site {
             ],
             [
                 'search_start',
-                '1'
+                '0'
             ],
             [
                 'full_search',
@@ -32,10 +31,6 @@ export class AnnuaireTelechargement extends Site {
             [
                 'story',
                 'query'
-            ],
-            [
-                'all_word_seach',
-                '1'
             ],
             [
                 'titleonly',
@@ -83,41 +78,31 @@ export class AnnuaireTelechargement extends Site {
     getDetails(url: string): Observable<Page> {
         return this.runRequest(url).pipe(
             map(($: CheerioStatic) => {
-                const pageEl = $('.corps .smallsep')[0].next;
-                const pageDetail = new Page(pageEl.firstChild.data + ' ' + this.findText(pageEl.next.firstChild), url, this);
+                const pageEl = $('.corps .smallsep').next();
+                const pageImg = $('.fr-fic.fr-dib');
+                const pageDetail = new Page(pageEl.text() + ' ' + pageEl.next().text(), url, this, null, pageImg.attr('src'));
 
-                const versionsEls = $('.otherversions a');
-                for (let i = 0; i < versionsEls.length; i++) {
-                    const versionEl = versionsEls[i];
-                    pageDetail.relatedPage.push(new Page(this.findText(versionEl), this.baseUrl + versionEl.attribs.href, this));
-                }
+                $('.otherversions a').each((index, element) => {
+                    pageDetail.relatedPage.push(new Page(this.findText(element), this.baseUrl + element.attribs.href, this));
+                });
 
                 pageDetail.fileLinks = [];
-                const links = $('.postinfo a');
                 let lastHost = null;
-                for (let i = 0; i < links.length; i++) {
-                    const link = links[i];
-                    if (link.parent.prev.firstChild !== null) {
-                        lastHost = link.parent.prev.firstChild.firstChild.data;
+                $('.postinfo a').each((index, element) => {
+                    if (element.parent.prev.firstChild !== null) {
+                        lastHost = element.parent.prev.firstChild.firstChild.data;
                     }
-                    pageDetail.fileLinks.push(new Link(link.firstChild.data, link.attribs.href, lastHost));
-                }
+                    pageDetail.fileLinks.push(new Link(element.firstChild.data, element.attribs.href, lastHost));
+                });
                 return pageDetail;
             })
         );
     }
 
     getRecents(): Observable<Page[]> {
-        return Observable.create((observer) => {
-            RssToJson.load(this.baseUrl + '/rss.xml', (err, res) => {
-                if (err) {
-                    observer.error(err);
-                } else {
-                    observer.next(res.items.map(i => new Page(i.title, i.link, this)));
-                }
-                observer.complete();
-            });
-        });
+        return this.runRss(this.baseUrl + '/rss.xml').pipe(
+            map(items => items.map(i => new Page(i.title, i.link, this)))
+        );
     }
 
     // TODO : next page ?
@@ -125,11 +110,9 @@ export class AnnuaireTelechargement extends Site {
         return this.runRequest(this.getSearchUrl(query)).pipe(
             map(($: CheerioStatic) => {
                 const pages: Page[] = [];
-                const resultsEls = $('.cover_global');
-                for (let i = 0; i < resultsEls.length; i++) {
-                    const page = resultsEls[i].children[7].firstChild.children[1];
-                    pages.push(new Page(this.findText(page), page.children[1].attribs.href, this));
-                }
+                $('.cover_infos_title').each((index, element) => {
+                    pages.push(new Page(this.findText(element), element.children[1].attribs.href, this));
+                });
                 return pages;
             })
         );

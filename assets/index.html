@@ -20,6 +20,11 @@
             display: flex;
             justify-content: space-between;
         }
+
+        #detail img {
+            max-width: 200px;
+            display: block;
+        }
     </style>
 </head>
 <body ng-app="app" ng-controller="ctrl">
@@ -74,6 +79,7 @@
         </h3>
         <div>
             Page: <a target="_blank" href="{{ detail.url }}">{{ detail.url }}</a>
+            <img src="{{ detail.image }}" alt="Image"/>
         </div>
         <div>
             <h4>Versions</h4>
@@ -111,7 +117,7 @@
 
         $scope.recents = function () {
             $scope.loading = true;
-            $http.get("/recents?query=" + $scope.query)
+            $http.get("/recents")
                 .then(function (response) {
                     $scope.loading = false;
                     $scope.resultPages = response.data;
@@ -178,8 +184,8 @@
         };
 
         $scope.recents();
-        $scope.jdownloaderGet();
-        $scope.jdownloaderGetQueue();
+        // $scope.jdownloaderGet();
+        // $scope.jdownloaderGetQueue();
     });
 </script>
 

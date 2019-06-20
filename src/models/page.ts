@@ -11,6 +11,7 @@ export class Page extends Link {
         url: string,
         public site: Site = null,
         host: string = null,
+        public image: string = null,
     ) {
         super(title, url, host);
     }

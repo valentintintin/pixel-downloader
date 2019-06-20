@@ -3,7 +3,6 @@ import { Observable } from 'rxjs';
 import { Page } from '../models/page';
 import { map } from 'rxjs/operators';
 import { Link } from '../models/link';
-import RssToJson = require('rss-to-json');
 
 export class ExtremeDownload extends Site {
 
@@ -83,54 +82,44 @@ export class ExtremeDownload extends Site {
     getDetails(url: string): Observable<Page> {
         return this.runRequest(url).pipe(
             map(($: CheerioStatic) => {
-                const pageEl = $('#dle-content .blockbox')[0];
-                const pageDetail = new Page(this.findText(pageEl.children[1]), url, this);
+                const pageEl = $('#news-title');
+                const pageImg = $('.image-block img');
+                const pageDetail = new Page(pageEl.text(), url, this, null, pageImg.attr('src'));
 
-                const versionsEls = $('.widget a.btn-other');
-                for (let i = 0; i < versionsEls.length; i++) {
-                    const versionEl = versionsEls[i];
-                    pageDetail.relatedPage.push(new Page(this.findText(versionEl), this.baseUrl + versionEl.attribs.href, this));
-                }
+                $('.widget a.btn-other').each((index, element) => {
+                    pageDetail.relatedPage.push(new Page(this.findText(element), this.baseUrl + element.attribs.href, this));
+                });
 
                 pageDetail.fileLinks = [];
-                const links = $('.blockcontent div a');
-                for (let i = 0; i < links.length; i++) {
-                    const link = links[i];
+                $('.blockcontent div a').each((index, element) => {
                     if ((
-                            !link.attribs.href.includes('shop') &&
-                            !link.attribs.href.includes('prezup') &&
-                            link.parent.name === 'div'
+                            !element.attribs.href.includes('shop') &&
+                            !element.attribs.href.includes('prezup') &&
+                            element.parent.name === 'div'
                         ) &&
-                        (!link.attribs.title || !link.attribs.title.includes('Regarder'))) {
-                        let title: string = this.findText(link);
+                        (!element.attribs.title || !element.attribs.title.includes('Regarder'))) {
+                        let title: string = this.findText(element);
                         let host: string = null;
                         let hostSplited: string[] = title.split(' ');
                         if (hostSplited.length <= 1) {
-                            hostSplited = this.findText(link.parent).split(' ');
+                            hostSplited = this.findText(element.parent).split(' ');
                         }
                         if (hostSplited.length > 1) {
                             title = hostSplited[hostSplited.length - 1].trim();
                             host = hostSplited[0].trim();
                         }
-                        pageDetail.fileLinks.push(new Link(title, link.attribs.href, host));
+                        pageDetail.fileLinks.push(new Link(title, this.baseUrl + element.attribs.href, host));
                     }
-                }
+                });
                 return pageDetail;
             })
         );
     }
 
     getRecents(): Observable<Page[]> {
-        return Observable.create((observer) => {
-            RssToJson.load(this.baseUrl + '/rss.xml', (err, res) => {
-                if (err) {
-                    observer.error(err);
-                } else {
-                    observer.next(res.items.map(i => new Page(i.title, this.baseUrl + i.link, this)));
-                }
-                observer.complete();
-            });
-        });
+        return this.runRss(this.baseUrl + '/rss.xml').pipe(
+            map(items => items.map(i => new Page(i.title, this.baseUrl + i.link, this)))
+        );
     }
 
     // TODO : next page ?
@@ -138,11 +127,9 @@ export class ExtremeDownload extends Site {
         return this.runRequest(this.getSearchUrl(query)).pipe(
             map(($: CheerioStatic) => {
                 const pages: Page[] = [];
-                const resultsEls = $('#dle-content a.thumbnails');
-                for (let i = 0; i < resultsEls.length; i++) {
-                    const page = resultsEls[i];
-                    pages.push(new Page(this.findText(page), this.baseUrl + page.attribs.href, this));
-                }
+                $('#dle-content a.thumbnails').each((index, element) => {
+                    pages.push(new Page(this.findText(element), this.baseUrl + element.attribs.href, this));
+                });
                 return pages;
             })
         );

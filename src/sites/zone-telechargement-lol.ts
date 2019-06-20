@@ -3,10 +3,9 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Page } from '../models/page';
 import { Link } from '../models/link';
-import RssToJson = require('rss-to-json');
 
 export class ZoneTelechargementLol extends Site {
-    
+
     constructor() {
         super('https://ww11.zone-telechargement.lol', 'index.php', [
             [
@@ -85,11 +84,9 @@ export class ZoneTelechargementLol extends Site {
         return this.runRequest(this.getSearchUrl(query)).pipe(
             map(($: CheerioStatic) => {
                 const pages: Page[] = [];
-                const resultsEls = $('.mov > a:first-child');
-                for (let i = 0; i < resultsEls.length; i++) {
-                    const page = resultsEls[i];
-                    pages.push(new Page(page.attribs.title, page.attribs.href, this));
-                }
+                $('.mov > a:first-child').each((index, element) => {
+                    pages.push(new Page(element.attribs.title, element.attribs.href, this));
+                });
                 return pages;
             })
         );
@@ -98,42 +95,31 @@ export class ZoneTelechargementLol extends Site {
     getDetails(url: string): Observable<Page> {
         return this.runRequest(url).pipe(
             map(($: CheerioStatic) => {
-                const pageEl = $('h2')[0];
-                const pageElInfo = pageEl.next.next.children;
-                const pageDetail = new Page(this.findText(pageEl) + ' ' + this.findText(pageElInfo), url, this);
+                const pageEl = $('h2').find('b');
+                const pageElInfo = pageEl.parent().next();
+                const pageImg = $('.jaquette');
+                const pageDetail = new Page(pageEl.text().trim() + ' ' + pageElInfo.text().trim(), url, this, null, this.baseUrl + '/' + (pageImg.attr('src') ? pageImg.attr('src') : pageImg.data('cfsrc')));
 
-                const versionsEls = $('.otherversions a');
-                for (let i = 0; i < versionsEls.length; i++) {
-                    const versionEl = versionsEls[i];
-                    pageDetail.relatedPage.push(new Page(this.findText(versionEl), versionEl.attribs.href, this));
-                }
-                
-                pageDetail.fileLinks = [];
-                const links = $('.download');
-                for (let i = 0; i < links.length; i++) {
-                    const link = links[i];
-                    const linkInfo = link.parent.parent;
-                    pageDetail.fileLinks.push(new Link(
-                        link.firstChild.data,
-                        this.baseUrl + link.attribs.href,
-                        linkInfo.parent.parent.children[1].children[1].children[1].children[1].data
-                    ));
-                }
+                $('.otherversions a').each((index, element) => {
+                    pageDetail.relatedPage.push(new Page(this.findText(element), element.attribs.href, this));
+                });
+
+                const hosts = $('table.downloadsortsonlink');
+                hosts.find('thead th:first-child').each((index, element) => {
+                    $('.download', hosts.get(index)).each((index1, element1) => pageDetail.fileLinks.push(new Link(
+                        this.findText(element1),
+                        this.baseUrl + element1.attribs['href'],
+                        this.findText(element)
+                    )));
+                });
                 return pageDetail;
             })
         );
     }
 
     public getRecents(): Observable<Page[]> {
-        return Observable.create((observer) => {
-            RssToJson.load(this.baseUrl + '/rss.xml', (err, res) => {
-                if (err) {
-                    observer.error(err);
-                } else {
-                    observer.next(res.items.map(i => new Page(i.title, i.link, this)));
-                }
-                observer.complete();
-            });
-        });
+        return this.runRss(this.baseUrl + '/rss.xml').pipe(
+            map(items => items.map(i => new Page(i.title, i.link, this)))
+        );
     }
 }

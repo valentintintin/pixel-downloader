@@ -1,29 +1,30 @@
 {
-  "name": "downloader",
+  "name": "download-site-search",
   "version": "1.2.2",
-  "description": "Tools to monitor and auto download from warez sites",
+  "description": "Tools to search download links from warez sites",
   "repository": "https://github.com/valentintintin/download-sites-automation",
   "main": "src/index.ts",
   "dependencies": {
-    "@akanass/rx-http-request": "^3.1.0",
-    "cheerio": "^1.0.0-rc.2",
-    "configstore": "^4.0.0",
+    "cheerio": "^0.22.0",
+    "cloudscraper": "^4.1.2",
+    "configstore": "^5.0.0",
     "enquirer": "^2.3.0",
-    "express": "^4.16.4",
+    "express": "^4.17.1",
     "install": "^0.12.2",
-    "jdownloader-api": "^1.1.0",
-    "ora": "^3.1.0",
+    "jdownloader-api": "^1.1.2",
+    "ora": "^3.4.0",
+    "request": "^2.88.0",
     "rss-to-json": "^1.0.4",
-    "rxjs": "^6.4.0",
-    "ts-node": "^8.0.2",
-    "typescript": "^3.2.4"
+    "rxjs": "^6.5.2",
+    "ts-node": "^8.3.0",
+    "typescript": "^3.5.2"
   },
   "devDependencies": {
-    "@types/cheerio": "^0.22.10",
+    "@types/cheerio": "^0.22.11",
     "@types/configstore": "^4.0.0",
-    "@types/express": "^4.16.1",
-    "@types/node": "^11.9.3",
-    "@types/ora": "^3.0.0"
+    "@types/express": "^4.17.0",
+    "@types/node": "^12.0.8",
+    "@types/ora": "^3.2.0"
   },
   "scripts": {
     "start": "ts-node src/index.ts",

@@ -13,6 +13,7 @@ import * as path from 'path';
 import { LinkDto } from './models/dto/link-dto';
 import { Link } from './models/link';
 import { ExtremeDownload } from './sites/extreme-download';
+import { AnnuaireTelechargement } from './sites/annuaire-telechargement';
 
 export class Api {
 
@@ -21,7 +22,7 @@ export class Api {
     private readonly sites: Site[] = [
         new ZoneTelechargementLol(),
         new ZoneTelechargementWorld(),
-        // new AnnuaireTelechargement(),
+        new AnnuaireTelechargement(),
         new ExtremeDownload()
     ];
 
@@ -57,10 +58,8 @@ export class Api {
             const obsSites: Observable<Page[]>[] = [];
             this.sites.forEach(site => obsSites.push(site.getRecents()));
 
-            const query = req.query.query;
-
             combineLatest(obsSites).pipe(
-                map(res => [].concat(...res).filter((r: Page) => !query || r.title.toLowerCase().includes(query)))
+                map(res => [].concat(...res))
             ).subscribe(results => {
                 res.json(results.map((p: Page) => PageDto.fromObject(p)));
             }, err => next(err));
@@ -85,11 +84,11 @@ export class Api {
             let site: Site = null;
             if (link.includes('zone-telechargement.lol')) {
                 site = this.sites[0];
-            } else if (link.includes('zone-telechargement.world')) {
+            } else if (link.includes('zone-telechargement.world') || link.includes('zone-telechargement1.world')) {
                 site = this.sites[1];
-            } /*else if (link.includes('annuaire-telechargement')) {
+            } else if (link.includes('annuaire-telechargement')) {
                 site = this.sites[2];
-            } */ else if (link.includes('extreme-download')) {
+            } else if (link.includes('extreme-download')) {
                 site = this.sites[2];
             } else {
                 throw new SiteNotFoundException(link);
