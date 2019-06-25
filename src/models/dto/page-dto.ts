@@ -4,14 +4,12 @@ import { LinkDto } from './link-dto';
 export class PageDto extends LinkDto {
 
     public static fromObject(page: Page): PageDto {
-        return new PageDto(page.title, page.url, page.site.host,
+        return new PageDto(page.title, page.url, page.host,
             page.relatedPage.map(p => PageDto.fromObject(p)),
             page.fileLinks.map(l => LinkDto.fromObject(l)),
             page.image
         );
     }
-
-    public details: string;
 
     constructor(
         title: string,
@@ -22,7 +20,6 @@ export class PageDto extends LinkDto {
         public image: string = null
     ) {
         super(title, url, host);
-        this.details = '/details?link=' + this.url;
     }
 }
 

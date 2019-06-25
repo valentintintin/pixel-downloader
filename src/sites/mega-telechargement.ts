@@ -4,10 +4,10 @@ import { Page } from '../models/page';
 import { map } from 'rxjs/operators';
 import { Link } from '../models/link';
 
-export class ZoneTelechargementWorld extends Site {
+export class MegaTelechargement extends Site {
 
     constructor() {
-        super('https://www.zone-telechargement1.world', 'index.php', [
+        super('https://www.mega-telechargements.com', 'index.php', [
             [
                 'do',
                 'search'
@@ -85,10 +85,18 @@ export class ZoneTelechargementWorld extends Site {
                 const pageEl = $('.corps h1');
                 const pageElInfo = $('.corps h2');
                 const pageImg = $('.corps center img').first();
-                const pageDetail = new Page(pageEl.text().trim() + ' ' + pageElInfo.text().trim(), url, this, null, this.baseUrl + '/' + pageImg.attr('src'));
+                const pageDetail = new Page(
+                    pageEl.text().trim() + ' ' + pageElInfo.text().trim(),
+                    url, this,
+                    pageImg.attr('src')
+                );
 
                 $('.otherversions a').each((index, element) => {
-                    pageDetail.relatedPage.push(new Page(this.findText(element), element.attribs.href, this));
+                    pageDetail.relatedPage.push(new Page(
+                        this.findText(element),
+                        element.attribs.href,
+                        this
+                    ));
                 });
 
                 pageDetail.fileLinks = [];
@@ -104,22 +112,27 @@ export class ZoneTelechargementWorld extends Site {
     }
 
     getRecents(): Observable<Page[]> {
-        return this.runRss(this.baseUrl + '/rss.xml').pipe(
+        const a = this.host;
+        return this.runRss('rss.xml').pipe(
             map(items => items.map(i => new Page(i.title, i.link, this)))
         );
     }
 
-    // TODO : next page ?
     search(query: string): Observable<Page[]> {
         return this.runRequest(this.getSearchUrl(query)).pipe(
             map(($: CheerioStatic) => {
                 const pages: Page[] = [];
-                $('.cover_infos_title a:nth-child(2)').each((index, element) => {
-                    pages.push(new Page(element.firstChild.data + ' ' + this.findText(element.children[1]), element.attribs.href, this, null));
+                $('.cover_global a:last-child').each((index, element) => {
+                    const pageImg = $('img', element);
+                    pages.push(new Page(
+                        this.findText(element),
+                        element.attribs.href,
+                        this,
+                        !pageImg.length ? null : pageImg.attr('src')
+                    ));
                 });
                 return pages;
             })
         );
     }
-
 }

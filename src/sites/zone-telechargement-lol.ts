@@ -7,7 +7,7 @@ import { Link } from '../models/link';
 export class ZoneTelechargementLol extends Site {
 
     constructor() {
-        super('https://ww11.zone-telechargement.lol', 'index.php', [
+        super('https://ww22.zone-telechargement.lol', 'index.php', [
             [
                 'do',
                 'search'
@@ -79,13 +79,18 @@ export class ZoneTelechargementLol extends Site {
         ], 'story');
     }
 
-    // TODO : next page ?
     search(query: string): Observable<Page[]> {
         return this.runRequest(this.getSearchUrl(query)).pipe(
             map(($: CheerioStatic) => {
                 const pages: Page[] = [];
                 $('.mov > a:first-child').each((index, element) => {
-                    pages.push(new Page(element.attribs.title, element.attribs.href, this));
+                    const pageImg = $('img', element);
+                    pages.push(new Page(
+                        element.attribs.title,
+                        element.attribs.href,
+                        this,
+                        !pageImg.length ? null : pageImg.attr('src')
+                    ));
                 });
                 return pages;
             })
@@ -98,17 +103,26 @@ export class ZoneTelechargementLol extends Site {
                 const pageEl = $('h2').find('b');
                 const pageElInfo = pageEl.parent().next();
                 const pageImg = $('.jaquette');
-                const pageDetail = new Page(pageEl.text().trim() + ' ' + pageElInfo.text().trim(), url, this, null, this.baseUrl + '/' + (pageImg.attr('src') ? pageImg.attr('src') : pageImg.data('cfsrc')));
+                const pageDetail = new Page(
+                    pageEl.text().trim() + ' ' + pageElInfo.text().trim(),
+                    url,
+                    this,
+                    !pageImg.length ? null : (pageImg.attr('src') ? pageImg.attr('src') : pageImg.data('cfsrc'))
+                );
 
                 $('.otherversions a').each((index, element) => {
-                    pageDetail.relatedPage.push(new Page(this.findText(element), element.attribs.href, this));
+                    pageDetail.relatedPage.push(new Page(
+                        this.findText(element),
+                        element.attribs.href,
+                        this
+                    ));
                 });
 
                 const hosts = $('table.downloadsortsonlink');
                 hosts.find('thead th:first-child').each((index, element) => {
-                    $('.download', hosts.get(index)).each((index1, element1) => pageDetail.fileLinks.push(new Link(
-                        this.findText(element1),
-                        this.baseUrl + element1.attribs['href'],
+                    $('.download', hosts.get(index)).each((index1, linkElement) => pageDetail.fileLinks.push(new Link(
+                        this.findText(linkElement),
+                        this.getLinkWithBaseIfNeeded(linkElement.attribs.href),
                         this.findText(element)
                     )));
                 });
@@ -118,7 +132,7 @@ export class ZoneTelechargementLol extends Site {
     }
 
     public getRecents(): Observable<Page[]> {
-        return this.runRss(this.baseUrl + '/rss.xml').pipe(
+        return this.runRss('rss.xml').pipe(
             map(items => items.map(i => new Page(i.title, i.link, this)))
         );
     }

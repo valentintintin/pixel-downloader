@@ -1,5 +1,3 @@
-import { Utils } from '../utils';
-
 export class Link {
 
     constructor(
@@ -10,9 +8,7 @@ export class Link {
         this.title = title.replace('Télécharger', '').trim();
         this.url = url.trim();
 
-        if (host) {
-            this.host = Utils.getHostFromUrl(host);
-        } else {
+        if (!host) {
             this.host = 'unknown';
         }
     }

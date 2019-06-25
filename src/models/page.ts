@@ -10,10 +10,13 @@ export class Page extends Link {
         title: string,
         url: string,
         public site: Site = null,
-        host: string = null,
         public image: string = null,
     ) {
-        super(title, url, host);
+        super(title, site.getLinkWithBaseIfNeeded(url), site.host);
+
+        if (image) {
+            this.image = site.getLinkWithBaseIfNeeded(image);
+        }
     }
 
     public toString(): string {

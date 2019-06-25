@@ -7,7 +7,7 @@ import { Link } from '../models/link';
 export class ExtremeDownload extends Site {
 
     constructor() {
-        super('https://www1.extreme-download.me', 'home.html', [
+        super('https://www3.extreme-download.co', 'home.html', [
             [
                 'do',
                 'search'
@@ -84,10 +84,19 @@ export class ExtremeDownload extends Site {
             map(($: CheerioStatic) => {
                 const pageEl = $('#news-title');
                 const pageImg = $('.image-block img');
-                const pageDetail = new Page(pageEl.text(), url, this, null, pageImg.attr('src'));
+                const pageDetail = new Page(
+                    pageEl.text(),
+                    url,
+                    this,
+                    !pageImg.length ? null : pageImg.attr('src')
+                );
 
                 $('.widget a.btn-other').each((index, element) => {
-                    pageDetail.relatedPage.push(new Page(this.findText(element), this.baseUrl + element.attribs.href, this));
+                    pageDetail.relatedPage.push(new Page(
+                        this.findText(element),
+                        element.attribs.href,
+                        this
+                    ));
                 });
 
                 pageDetail.fileLinks = [];
@@ -105,10 +114,10 @@ export class ExtremeDownload extends Site {
                             hostSplited = this.findText(element.parent).split(' ');
                         }
                         if (hostSplited.length > 1) {
-                            title = hostSplited[hostSplited.length - 1].trim();
+                            title = hostSplited.slice(1).join().trim();
                             host = hostSplited[0].trim();
                         }
-                        pageDetail.fileLinks.push(new Link(title, this.baseUrl + element.attribs.href, host));
+                        pageDetail.fileLinks.push(new Link(title, this.getLinkWithBaseIfNeeded(element.attribs.href), host));
                     }
                 });
                 return pageDetail;
@@ -117,22 +126,26 @@ export class ExtremeDownload extends Site {
     }
 
     getRecents(): Observable<Page[]> {
-        return this.runRss(this.baseUrl + '/rss.xml').pipe(
-            map(items => items.map(i => new Page(i.title, this.baseUrl + i.link, this)))
+        return this.runRss('rss.xml').pipe(
+            map(items => items.map(i => new Page(i.title, i.link, this)))
         );
     }
 
-    // TODO : next page ?
     search(query: string): Observable<Page[]> {
         return this.runRequest(this.getSearchUrl(query)).pipe(
             map(($: CheerioStatic) => {
                 const pages: Page[] = [];
                 $('#dle-content a.thumbnails').each((index, element) => {
-                    pages.push(new Page(this.findText(element), this.baseUrl + element.attribs.href, this));
+                    const pageImg = $('img', element);
+                    pages.push(new Page(
+                        this.findText(element),
+                        element.attribs.href,
+                        this,
+                        !pageImg.length ? null : pageImg.attr('src')
+                    ));
                 });
                 return pages;
             })
         );
     }
-
 }

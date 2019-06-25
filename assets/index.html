@@ -40,24 +40,24 @@
             <button type="button" ng-click="recents()">Recents</button>
         </form>
     </div>
-    <div>
-        <h2>Jdownloader</h2>
-        <div>
-            <h3>Jdownloader list</h3>
-            <div ng-repeat="link in jdownloaderGet">
-                <a target="_blank" href="{{ link.url }}">{{ link.title ? link.title : 'Download' }}</a>
-            </div>
-        </div>
-        <div>
-            <h3>Queue to add</h3>
-            <div ng-repeat="link in jdownloaderQueue">
-                <a target="_blank" href="{{ link.url }}">{{ link.title ? link.title : 'Download' }}</a>
-            </div>
-        </div>
-        <div>
-            <button ng-click="jdownloaderFlush()">Send to server</button>
-        </div>
-    </div>
+    <!--    <div>-->
+    <!--        <h2>Jdownloader</h2>-->
+    <!--        <div>-->
+    <!--            <h3>Jdownloader list</h3>-->
+    <!--            <div ng-repeat="link in jdownloaderGet">-->
+    <!--                <a target="_blank" href="{{ link.url }}">{{ link.title ? link.title : 'Download' }}</a>-->
+    <!--            </div>-->
+    <!--        </div>-->
+    <!--        <div>-->
+    <!--            <h3>Queue to add</h3>-->
+    <!--            <div ng-repeat="link in jdownloaderQueue">-->
+    <!--                <a target="_blank" href="{{ link.url }}">{{ link.title ? link.title : 'Download' }}</a>-->
+    <!--            </div>-->
+    <!--        </div>-->
+    <!--        <div>-->
+    <!--            <button ng-click="jdownloaderFlush()">Send to server</button>-->
+    <!--        </div>-->
+    <!--    </div>-->
     <div ng-if="loading">
         Loading in progress ...
     </div>
@@ -67,7 +67,7 @@
     <div id="results">
         <h2>Résults :</h2>
         <ul>
-            <li ng-repeat="page in resultPages" ng-click="details(page.url)">{{ page.title }} - {{ page.host }}</li>
+            <li ng-repeat="page in resultPages" ng-click="details(page)">{{ page.title }} - {{ page.host }}</li>
         </ul>
     </div>
 
@@ -84,7 +84,7 @@
         <div>
             <h4>Versions</h4>
             <ul>
-                <li ng-repeat="version in detail.relatedPage" ng-click="details(version.url)">{{ version.title }}
+                <li ng-repeat="version in detail.relatedPage" ng-click="details(version)">{{ version.title }}
                 </li>
             </ul>
         </div>
@@ -92,10 +92,10 @@
             <h4>Links</h4>
             <div ng-repeat="(host, links) in detail.fileLinksByHost">
                 <h5>{{ host }}</h5>
-                <button ng-click="jdownloaderAdd(links)">Add all to queue</button>
+                <!--                <button ng-click="jdownloaderAdd(links)">Add all to queue</button>-->
                 <div ng-repeat="link in links">
                     <a target="_blank" href="{{ link.url }}">{{ link.title ? link.title : 'Download' }}</a>
-                    <button ng-click="jdownloaderAdd(link)">Add to queue</button>
+                    <!--                    <button ng-click="jdownloaderAdd(link)">Add to queue</button>-->
                 </div>
             </div>
         </div>
@@ -114,28 +114,46 @@
         $scope.loading = false;
         $scope.jdownloaderQueue = [];
         $scope.jdownloaderList = [];
+        $scope.sites = [];
+
+        $scope.getSites = function () {
+            $scope.loading = true;
+            $http.get("/sites")
+                .then(function (response) {
+                    $scope.loading = false;
+                    $scope.sites = response.data;
+
+                    $scope.recents();
+                });
+        };
 
         $scope.recents = function () {
             $scope.loading = true;
-            $http.get("/recents")
-                .then(function (response) {
-                    $scope.loading = false;
-                    $scope.resultPages = response.data;
-                });
+            $scope.resultPages = [];
+            for (const site of $scope.sites) {
+                $http.get("/recents/" + site)
+                    .then(function (response) {
+                        $scope.loading = false;
+                        $scope.resultPages = $scope.resultPages.concat(response.data);
+                    });
+            }
         };
 
         $scope.search = function () {
             $scope.loading = true;
-            $http.get("/search?query=" + $scope.query)
+            $scope.resultPages = [];
+            for (const site of $scope.sites) {
+                $http.get("/search/" + site + "?query=" + $scope.query)
                 .then(function (response) {
                     $scope.loading = false;
-                    $scope.resultPages = response.data;
+                    $scope.resultPages = $scope.resultPages.concat(response.data);
                 });
+            }
         };
 
-        $scope.details = function (url) {
+        $scope.details = function (page) {
             $scope.loading = true;
-            $http.get("/details?link=" + url)
+            $http.get("/details?link=" + page.url + "&site=" + page.host)
                 .then(function (response) {
                     $scope.loading = false;
                     $scope.detail = response.data;
@@ -183,7 +201,7 @@
                 });
         };
 
-        $scope.recents();
+        $scope.getSites();
         // $scope.jdownloaderGet();
         // $scope.jdownloaderGetQueue();
     });

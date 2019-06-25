@@ -1,7 +1,6 @@
 import { Page } from '../models/page';
 import { Observable } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { Utils } from '../utils';
 import Cheerio = require('cheerio');
 import RssToJson = require('rss-to-json');
 import cloudscraper = require('cloudscraper');
@@ -14,7 +13,7 @@ export abstract class Site {
                           protected pageSearchRequest: string,
                           protected readonly searchRequest: string[][],
                           protected readonly queryParameterName: string) {
-        this.host = Utils.getHostFromUrl(this.baseUrl);
+        this.host = this.constructor.name;
     }
 
     public abstract search(query: string): Observable<Page[]>;
@@ -26,7 +25,7 @@ export abstract class Site {
     protected getSearchUrl(query: string): string {
         const searchRequest = this.searchRequest.slice(0);
         searchRequest.find(r => r[0] === this.queryParameterName)[1] = query;
-        return this.baseUrl + '/' + this.pageSearchRequest + '?' + searchRequest.map(r => r.join('=')).join('&');
+        return this.getLinkWithBaseIfNeeded(this.pageSearchRequest) + '?' + searchRequest.map(r => r.join('=')).join('&');
     }
     
     protected findText(el): string {
@@ -50,7 +49,7 @@ export abstract class Site {
     
     protected runRequest(url: string): Observable<{} | CheerioStatic> {
         return new Observable<string>(observer => {
-            cloudscraper.get(url).then(data => observer.next(data), error => observer.error(error));
+            cloudscraper.get(this.getLinkWithBaseIfNeeded(url)).then(data => observer.next(data), error => observer.error(error));
         }).pipe(
             map(data => Cheerio.load(data)),
             catchError(err => {
@@ -62,7 +61,7 @@ export abstract class Site {
 
     protected runRss(url: string): Observable<any[]> {
         return new Observable<any[]>(observer => {
-            RssToJson.load(url, (err, res) => {
+            RssToJson.load(this.getLinkWithBaseIfNeeded(url), (err, res) => {
                 if (err) {
                     observer.error(err);
                 } else {
@@ -71,5 +70,9 @@ export abstract class Site {
                 observer.complete();
             })
         });
+    }
+
+    public getLinkWithBaseIfNeeded(link: string): string {
+        return link.startsWith('http') ? link : this.baseUrl + (link.startsWith('/') ? '' : '/') + link;
     }
 }

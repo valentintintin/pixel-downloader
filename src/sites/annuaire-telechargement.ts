@@ -7,7 +7,7 @@ import { Link } from '../models/link';
 export class AnnuaireTelechargement extends Site {
 
     constructor() {
-        super('https://www.annuaire-telechargement.cc', 'index.php', [
+        super('https://wwvww.annuaire-telechargement.com', 'index.php', [
             [
                 'do',
                 'search'
@@ -80,10 +80,19 @@ export class AnnuaireTelechargement extends Site {
             map(($: CheerioStatic) => {
                 const pageEl = $('.corps .smallsep').next();
                 const pageImg = $('.fr-fic.fr-dib');
-                const pageDetail = new Page(pageEl.text() + ' ' + pageEl.next().text(), url, this, null, pageImg.attr('src'));
+                const pageDetail = new Page(
+                    pageEl.text() + ' ' + pageEl.next().text(),
+                    url,
+                    this,
+                    !pageImg.length ? null : pageImg.attr('src')
+                );
 
                 $('.otherversions a').each((index, element) => {
-                    pageDetail.relatedPage.push(new Page(this.findText(element), this.baseUrl + element.attribs.href, this));
+                    pageDetail.relatedPage.push(new Page(
+                        this.findText(element),
+                        element.attribs.href,
+                        this)
+                    );
                 });
 
                 pageDetail.fileLinks = [];
@@ -92,7 +101,7 @@ export class AnnuaireTelechargement extends Site {
                     if (element.parent.prev.firstChild !== null) {
                         lastHost = element.parent.prev.firstChild.firstChild.data;
                     }
-                    pageDetail.fileLinks.push(new Link(element.firstChild.data, element.attribs.href, lastHost));
+                    pageDetail.fileLinks.push(new Link(element.firstChild.data, this.getLinkWithBaseIfNeeded(element.attribs.href), lastHost));
                 });
                 return pageDetail;
             })
@@ -100,18 +109,25 @@ export class AnnuaireTelechargement extends Site {
     }
 
     getRecents(): Observable<Page[]> {
-        return this.runRss(this.baseUrl + '/rss.xml').pipe(
+        return this.runRss('rss.xml').pipe(
             map(items => items.map(i => new Page(i.title, i.link, this)))
         );
     }
 
-    // TODO : next page ?
     search(query: string): Observable<Page[]> {
         return this.runRequest(this.getSearchUrl(query)).pipe(
             map(($: CheerioStatic) => {
                 const pages: Page[] = [];
-                $('.cover_infos_title').each((index, element) => {
-                    pages.push(new Page(this.findText(element), element.children[1].attribs.href, this));
+                $('.cover_global').each((index, element) => {
+                    const pageEl = $('.cover_infos_title a', element);
+                    const pageElInfo = $('.cover_infos_title .detail_release', element);
+                    const pageImg = $('.mainimg', element);
+                    pages.push(new Page(
+                        pageEl.text() + ' ' + pageElInfo.text(),
+                        pageEl.attr('href'),
+                        this,
+                        !pageImg.length ? null : pageImg.attr('src')
+                    ));
                 });
                 return pages;
             })

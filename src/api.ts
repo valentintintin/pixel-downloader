@@ -2,13 +2,10 @@ import { Jdownloader } from './jdownloader';
 import * as config from './config';
 import { Site } from './sites/site';
 import { ZoneTelechargementLol } from './sites/zone-telechargement-lol';
-import { ZoneTelechargementWorld } from './sites/zone-telechargement-world';
-import { combineLatest, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { MegaTelechargement } from './sites/mega-telechargement';
 import { Page } from './models/page';
 import * as express from 'express';
 import { PageDto } from './models/dto/page-dto';
-import { SiteNotFoundException } from './models/site-not-found.exception';
 import * as path from 'path';
 import { LinkDto } from './models/dto/link-dto';
 import { Link } from './models/link';
@@ -21,16 +18,33 @@ export class Api {
     private readonly jd = new Jdownloader(config.JDOWNLOADER_LOGIN, config.JDOWNLOADER_PASSWORD, config.JDOWNLOADER_DEVICE_NAME);
     private readonly sites: Site[] = [
         new ZoneTelechargementLol(),
-        new ZoneTelechargementWorld(),
+        new MegaTelechargement(),
         new AnnuaireTelechargement(),
         new ExtremeDownload()
     ];
 
+    private getSiteByName(name: string): Site {
+        return this.sites.find(s => s.host == name);
+    }
+
     constructor() {
         this.app.use(express.json());
 
+        this.app.use((req, res, next) => {
+            console.log(new Date().toLocaleString(), req.method, req.path, 'start');
+            res.on('finish', () => {
+                console.log(new Date().toLocaleString(), req.method, req.path, 'stopped', res.statusCode);
+            });
+
+            next();
+        });
+
         this.app.get('/', (req, res, next) => {
             res.sendFile(path.join(__dirname + '/../assets/index.html'));
+        });
+
+        this.app.get('/sites', (req, res, next) => {
+            res.json(this.sites.map(s => s.host));
         });
 
         this.app.get('/jdownloader/get', (req, res, next) => {
@@ -54,49 +68,30 @@ export class Api {
             this.jd.flushQueueToServer().subscribe(results => res.json(results), err => next(err));
         });
 
-        this.app.get('/recents', (req, res, next) => {
-            const obsSites: Observable<Page[]>[] = [];
-            this.sites.forEach(site => obsSites.push(site.getRecents()));
-
-            combineLatest(obsSites).pipe(
-                map(res => [].concat(...res))
-            ).subscribe(results => {
-                res.json(results.map((p: Page) => PageDto.fromObject(p)));
-            }, err => next(err));
+        this.app.get('/recents/:siteName', (req, res, next) => {
+            this.getSiteByName(req.params['siteName']).getRecents()
+                .subscribe(results => {
+                    res.json(results.map((p: Page) => PageDto.fromObject(p)));
+                }, err => next(err));
         });
 
-        this.app.get('/search', (req, res, next) => {
+        this.app.get('/search/:siteName', (req, res, next) => {
             const query = req.query.query;
 
-            const obsSites: Observable<Page[]>[] = [];
-            this.sites.forEach(site => obsSites.push(site.search(query)));
-
-            combineLatest(obsSites).pipe(
-                map(res => [].concat(...res))
-            ).subscribe(results => {
-                res.json(results.map((p: Page) => PageDto.fromObject(p)));
-            }, err => next(err));
+            this.getSiteByName(req.params['siteName']).search(query)
+                .subscribe(results => {
+                    res.json(results.map((p: Page) => PageDto.fromObject(p)));
+                }, err => next(err));
         });
 
         this.app.get('/details', (req, res, next) => {
             const link = req.query.link;
+            const site = req.query.site;
 
-            let site: Site = null;
-            if (link.includes('zone-telechargement.lol')) {
-                site = this.sites[0];
-            } else if (link.includes('zone-telechargement.world') || link.includes('zone-telechargement1.world')) {
-                site = this.sites[1];
-            } else if (link.includes('annuaire-telechargement')) {
-                site = this.sites[2];
-            } else if (link.includes('extreme-download')) {
-                site = this.sites[2];
-            } else {
-                throw new SiteNotFoundException(link);
-            }
-
-            site.getDetails(link).subscribe(result => {
-                res.json(PageDto.fromObject(result));
-            }, err => next(err));
+            this.getSiteByName(site).getDetails(link)
+                .subscribe(result => {
+                    res.json(PageDto.fromObject(result));
+                }, err => next(err));
         });
 
         this.app.use((error, req, res, next) => {
