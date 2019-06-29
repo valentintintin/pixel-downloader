@@ -122,11 +122,12 @@ export class MegaTelechargement extends Site {
         return this.runRequest(this.getSearchUrl(query)).pipe(
             map(($: CheerioStatic) => {
                 const pages: Page[] = [];
-                $('.cover_global a:last-child').each((index, element) => {
+                $('.cover_global').each((index, element) => {
+                    const pageEl = $('a:last-child', element);
                     const pageImg = $('img', element);
                     pages.push(new Page(
-                        this.findText(element),
-                        element.attribs.href,
+                        pageEl.text(),
+                        pageEl.attr('href'),
                         this,
                         !pageImg.length ? null : pageImg.attr('src')
                     ));
