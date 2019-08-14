@@ -27,7 +27,6 @@ export class Cli {
     private spinner = ora();
 
     constructor() {
-        throw new Error('Too buguy to be used');
     }
 
     public run(argv: string[] = []) {
