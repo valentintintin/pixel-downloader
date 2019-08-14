@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <title>Downloader dashboard</title>
 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.5/angular.min.js"></script>
 
     <style>
@@ -18,12 +20,31 @@
 
         header, main {
             display: flex;
-            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        main > div {
+            width: 100%;
+        }
+
+        #results {
+            min-width: 400px;
         }
 
         #detail img {
             max-width: 200px;
             display: block;
+        }
+
+        .active {
+            color: red;
+            font-weight: bold;
+        }
+
+        @media screen and (max-width: 500px) {
+            main {
+                flex-direction: column-reverse;
+            }
         }
     </style>
 </head>
@@ -67,15 +88,19 @@
     <div id="results">
         <h2>Résults :</h2>
         <ul>
-            <li ng-repeat="page in resultPages" ng-click="details(page)">{{ page.title }} - {{ page.host }}</li>
+            <li ng-repeat="page in resultPages" ng-click="details(page)" ng-class="{ active: page.url == detail.url }">
+                {{ page.title }} - {{ page.host }}
+            </li>
         </ul>
     </div>
 
     <div id="detail" ng-if="detail">
-        <h2>Détails :</h2>
+        <h2>Détails :
+            <button ng-click="closeDetail()">Close</button>
+        </h2>
 
         <h3>
-            {{ detail.title }}
+            {{ detail.title }} - {{ detail.host }}
         </h3>
         <div>
             Page: <a target="_blank" href="{{ detail.url }}">{{ detail.url }}</a>
@@ -105,10 +130,12 @@
 </body>
 
 <script>
-    var app = angular.module("app", []);
-    app.controller("ctrl", function ($scope, $http) {
+    var app = angular.module("app", []).config(['$locationProvider', function ($locationProvider) {
+        $locationProvider.html5Mode({enabled: true, requireBase: false, rewriteLinks: false});
+    }]);
+    app.controller("ctrl", function ($location, $scope, $http) {
 
-        $scope.query = '';
+        $scope.query = getParameterByName('q');
         $scope.resultPages = [];
         $scope.detail = null;
         $scope.loading = false;
@@ -116,14 +143,17 @@
         $scope.jdownloaderList = [];
         $scope.sites = [];
 
+        $scope.closeDetail = function () {
+            $scope.detail = null;
+            history.pushState(null, $scope.query ? $scope.query : '', updateQueryStringParameter(updateQueryStringParameter(window.location.href, 'host', null), 'link', null));
+        };
+
         $scope.getSites = function () {
             $scope.loading = true;
-            $http.get("/sites")
+            return $http.get("/sites")
                 .then(function (response) {
                     $scope.loading = false;
                     $scope.sites = response.data;
-
-                    $scope.recents();
                 });
         };
 
@@ -142,18 +172,24 @@
         $scope.search = function () {
             $scope.loading = true;
             $scope.resultPages = [];
+
+            history.pushState(null, $scope.query, updateQueryStringParameter(window.location.href, 'q', $scope.query));
+
             for (const site of $scope.sites) {
                 $http.get("/search/" + site + "?query=" + $scope.query)
-                .then(function (response) {
-                    $scope.loading = false;
-                    $scope.resultPages = $scope.resultPages.concat(response.data);
-                });
+                    .then(function (response) {
+                        $scope.loading = false;
+                        $scope.resultPages = $scope.resultPages.concat(response.data);
+                    });
             }
         };
 
         $scope.details = function (page) {
             $scope.loading = true;
-            $http.get("/details?link=" + page.url + "&site=" + page.host)
+
+            history.pushState(null, page.title, updateQueryStringParameter(updateQueryStringParameter(window.location.href, 'host', page.host), 'link', page.url));
+
+            return $http.get("/details?link=" + page.url + "&site=" + page.host)
                 .then(function (response) {
                     $scope.loading = false;
                     $scope.detail = response.data;
@@ -166,7 +202,7 @@
 
         $scope.jdownloaderGet = function () {
             $scope.loading = true;
-            $http.get("/jdownloader/get")
+            return $http.get("/jdownloader/get")
                 .then(function (response) {
                     $scope.loading = false;
                     $scope.jdownloaderList = response.data;
@@ -175,7 +211,7 @@
 
         $scope.jdownloaderGetQueue = function () {
             $scope.loading = true;
-            $http.get("/jdownloader/get-queue")
+            return $http.get("/jdownloader/get-queue")
                 .then(function (response) {
                     $scope.loading = false;
                     $scope.jdownloaderQueue = response.data;
@@ -184,7 +220,7 @@
 
         $scope.jdownloaderAdd = function (link) {
             $scope.loading = true;
-            $http.post("/jdownloader/add", JSON.stringify(link))
+            return $http.post("/jdownloader/add", JSON.stringify(link))
                 .then(function (response) {
                     $scope.loading = false;
                     $scope.jdownloaderQueue = response.data;
@@ -193,7 +229,7 @@
 
         $scope.jdownloaderFlush = function () {
             $scope.loading = true;
-            $http.get("/jdownloader/flush")
+            return $http.get("/jdownloader/flush")
                 .then(function (response) {
                     $scope.loading = false;
                     $scope.jdownloaderQueue = [];
@@ -201,10 +237,57 @@
                 });
         };
 
-        $scope.getSites();
+        $scope.getSites().then(function () {
+            if ($scope.query) {
+                $scope.search();
+            } else {
+                $scope.recents();
+            }
+            var link = getParameterByName('link');
+            var host = getParameterByName('host');
+            if (link && host) {
+                $scope.details({
+                    url: link,
+                    host: host
+                });
+            }
+        });
         // $scope.jdownloaderGet();
         // $scope.jdownloaderGetQueue();
     });
+
+    function updateQueryStringParameter(uri, key, value) {
+        var re = new RegExp("([?&])" + key + "=.*?(&|#|$)", "i");
+        if (!value) {
+            if (uri.match(re)) {
+                return uri.replace(re, '$1$2');
+            } else {
+                return uri;
+            }
+        } else {
+            if (uri.match(re)) {
+                return uri.replace(re, '$1' + key + "=" + value + '$2');
+            } else {
+                var hash = '';
+                if (uri.indexOf('#') !== -1) {
+                    hash = uri.replace(/.*#/, '#');
+                    uri = uri.replace(/#.*/, '');
+                }
+                var separator = uri.indexOf('?') !== -1 ? "&" : "?";
+                return uri + separator + key + "=" + value + hash;
+            }
+        }
+    }
+
+    function getParameterByName(name, url) {
+        if (!url) url = window.location.href;
+        name = name.replace(/[\[\]]/g, '\\$&');
+        var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+            results = regex.exec(url);
+        if (!results) return null;
+        if (!results[2]) return '';
+        return decodeURIComponent(results[2].replace(/\+/g, ' '));
+    }
 </script>
 
 </html>
