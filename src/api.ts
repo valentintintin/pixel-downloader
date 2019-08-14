@@ -76,7 +76,7 @@ export class Api {
         });
 
         this.app.get('/search/:siteName', (req, res, next) => {
-            this.getSiteByName(req.params['siteName']).search(req.query.query.normalize('NFD').replace(/[\u0300-\u036f]/g, ''))
+            this.getSiteByName(req.params['siteName']).search(req.query.query)
                 .subscribe(results => {
                     res.json(results.map((p: Page) => PageDto.fromObject(p)));
                 }, err => next(err));
@@ -84,12 +84,18 @@ export class Api {
 
         this.app.get('/details', (req, res, next) => {
             const link = req.query.link;
-            const site = req.query.site;
+            const host = req.query.site;
 
-            this.getSiteByName(site).getDetails(link)
-                .subscribe(result => {
-                    res.json(PageDto.fromObject(result));
-                }, err => next(err));
+            if (link && host) {
+                this.getSiteByName(host).getDetails(link)
+                    .subscribe(result => {
+                        res.json(PageDto.fromObject(result));
+                    }, err => next(err));
+            } else {
+                console.error('Link and host must be valid');
+                res.statusCode = 400;
+                res.send('Link and host must be valid');
+            }
         });
 
         this.app.use((error, req, res, next) => {

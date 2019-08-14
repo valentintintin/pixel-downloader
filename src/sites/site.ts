@@ -48,6 +48,11 @@ export abstract class Site {
     }
     
     protected runRequest(url: string): Observable<{} | CheerioStatic> {
+        url = url.normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/["'<>]/g, ' ')
+            .toLowerCase();
+
         return new Observable<string>(observer => {
             cloudscraper.get(this.getLinkWithBaseIfNeeded(url)).then(data => observer.next(data), error => observer.error(error));
         }).pipe(

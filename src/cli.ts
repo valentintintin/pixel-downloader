@@ -34,7 +34,7 @@ export class Cli {
         let query: string = null;
         let host: string = null;
         if (argv.length > 1) {
-            query = argv[1].toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            query = argv[1].toLowerCase().trim();
         }
         if (argv.length > 2) {
             host = Utils.getHostFromUrl(argv[2]);
