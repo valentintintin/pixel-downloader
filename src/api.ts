@@ -1,7 +1,7 @@
 import { Jdownloader } from './jdownloader';
 import * as config from './config';
 import { Site } from './sites/site';
-import { ZoneTelechargementLol } from './sites/zone-telechargement-lol';
+import { ZoneTelechargement } from './sites/zone-telechargement';
 import { MegaTelechargement } from './sites/mega-telechargement';
 import { Page } from './models/page';
 import * as express from 'express';
@@ -17,7 +17,7 @@ export class Api {
     private readonly app: express.Application = express();
     private readonly jd = new Jdownloader(config.JDOWNLOADER_LOGIN, config.JDOWNLOADER_PASSWORD, config.JDOWNLOADER_DEVICE_NAME);
     private readonly sites: Site[] = [
-        new ZoneTelechargementLol(),
+        new ZoneTelechargement(),
         new MegaTelechargement(),
         new AnnuaireTelechargement(),
         new ExtremeDownload()
@@ -76,9 +76,7 @@ export class Api {
         });
 
         this.app.get('/search/:siteName', (req, res, next) => {
-            const query = req.query.query;
-
-            this.getSiteByName(req.params['siteName']).search(query)
+            this.getSiteByName(req.params['siteName']).search(req.query.query.normalize('NFD').replace(/[\u0300-\u036f]/g, ''))
                 .subscribe(results => {
                     res.json(results.map((p: Page) => PageDto.fromObject(p)));
                 }, err => next(err));

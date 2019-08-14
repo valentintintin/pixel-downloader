@@ -4,10 +4,10 @@ import { map } from 'rxjs/operators';
 import { Page } from '../models/page';
 import { Link } from '../models/link';
 
-export class ZoneTelechargementLol extends Site {
+export class ZoneTelechargement extends Site {
 
     constructor() {
-        super('https://ww22.zone-telechargement.lol', 'index.php', [
+        super('https://www.zone-telechargement.vip', 'index.php', [
             [
                 'do',
                 'search'

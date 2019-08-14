@@ -1,5 +1,5 @@
 import { Page } from '../models/page';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import Cheerio = require('cheerio');
 import RssToJson = require('rss-to-json');
@@ -53,8 +53,8 @@ export abstract class Site {
         }).pipe(
             map(data => Cheerio.load(data)),
             catchError(err => {
-                console.error(err);
-                return err;
+                console.error('url: ' + url, err);
+                return throwError(err);
             })
         );
     }
@@ -63,6 +63,7 @@ export abstract class Site {
         return new Observable<any[]>(observer => {
             RssToJson.load(this.getLinkWithBaseIfNeeded(url), (err, res) => {
                 if (err) {
+                    console.error('url: ' + url, err);
                     observer.error(err);
                 } else {
                     observer.next(res.items);

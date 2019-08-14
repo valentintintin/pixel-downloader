@@ -7,7 +7,7 @@ import { Link } from '../models/link';
 export class AnnuaireTelechargement extends Site {
 
     constructor() {
-        super('https://wwvww.annuaire-telechargement.com', 'index.php', [
+        super('https://www.zone-telechargement.net', 'index.php', [
             [
                 'do',
                 'search'
