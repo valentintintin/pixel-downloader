@@ -7,7 +7,7 @@ import { Link } from '../models/link';
 export class ExtremeDownload extends Site {
 
     constructor() {
-        super('https://www3.extreme-download.co', 'home.html', [
+        super('https://ww5.extreme-download.co', 'home.html', [
             [
                 'do',
                 'search'
@@ -106,7 +106,7 @@ export class ExtremeDownload extends Site {
                         (
                             !element.attribs.href.includes('shop') &&
                             !element.attribs.href.includes('prezup') &&
-                            element.parent.name === 'div'
+                            (element.parent.name === 'div' || element.parent.name === 'strong')
                         ) &&
                         (!element.attribs.title || !element.attribs.title.includes('Regarder'))) {
                         let title: string = this.findText(element);
