@@ -34,7 +34,7 @@ export class ZoneTelechargement extends Site {
             ],
             [
                 'all_word_seach',
-                '1'
+                '0'
             ],
             [
                 'titleonly',

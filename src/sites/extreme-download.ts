@@ -34,7 +34,7 @@ export class ExtremeDownload extends Site {
             ],
             [
                 'all_word_seach',
-                '1'
+                '0'
             ],
             [
                 'titleonly',
@@ -104,8 +104,10 @@ export class ExtremeDownload extends Site {
                     if (
                         element.attribs.href &&
                         (
+                            !element.attribs.href.includes('javascript') &&
                             !element.attribs.href.includes('shop') &&
                             !element.attribs.href.includes('prezup') &&
+                            !element.attribs.href.includes('register') &&
                             (element.parent.name === 'div' || element.parent.name === 'strong')
                         ) &&
                         (!element.attribs.title || !element.attribs.title.includes('Regarder'))) {

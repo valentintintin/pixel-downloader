@@ -80,11 +80,12 @@ export class AnnuaireTelechargement extends Site {
             map(($: CheerioStatic) => {
                 const pageEl = $('.corps .smallsep').next();
                 const pageImg = $('.fr-fic.fr-dib');
+                const pageImg2 = $('.corps center img:first-child');
                 const pageDetail = new Page(
                     pageEl.text() + ' ' + pageEl.next().text(),
                     url,
                     this,
-                    !pageImg.length ? null : pageImg.attr('src')
+                    !pageImg.length ? !pageImg2.length ? null : pageImg2.attr('src') : pageImg.attr('src')
                 );
 
                 $('.otherversions a').each((index, element) => {
@@ -102,6 +103,12 @@ export class AnnuaireTelechargement extends Site {
                         lastHost = element.parent.prev.firstChild.firstChild.data;
                     }
                     pageDetail.fileLinks.push(new Link(element.firstChild.data, this.getLinkWithBaseIfNeeded(element.attribs.href), lastHost));
+                });
+                $('.postinfo form').each((index, element) => {
+                    if (element.parent.prev.firstChild !== null) {
+                        lastHost = element.parent.prev.firstChild.firstChild.data;
+                    }
+                    pageDetail.fileLinks.push(new Link('', pageDetail.url, lastHost));
                 });
                 return pageDetail;
             })
