@@ -1,7 +1,7 @@
 import { Jdownloader } from './jdownloader';
 import * as config from './config';
 import { Site } from './sites/site';
-import { ZoneTelechargementLol } from './sites/zone-telechargement-lol';
+import { ZoneTelechargement } from './sites/zone-telechargement';
 import { Link } from './models/link';
 import { combineLatest, Observable, of } from 'rxjs';
 import { map, switchMap, tap } from 'rxjs/operators';
@@ -11,28 +11,30 @@ import { MegaTelechargement } from './sites/mega-telechargement';
 import { Utils } from './utils';
 import { NoLinkException } from './models/no-link.exception';
 import { ExtremeDownload } from './sites/extreme-download';
+import { AnnuaireTelechargement } from './sites/annuaire-telechargement';
 import ora = require('ora');
 
 export class Cli {
 
     private readonly jd = new Jdownloader(config.JDOWNLOADER_LOGIN, config.JDOWNLOADER_PASSWORD, config.JDOWNLOADER_DEVICE_NAME);
     private readonly sites: Site[] = [
-        new ZoneTelechargementLol(),
+        new ZoneTelechargement(),
         new MegaTelechargement(),
-        // new AnnuaireTelechargement(),
+        new AnnuaireTelechargement(),
         new ExtremeDownload()
     ];
 
     private spinner = ora();
 
     constructor() {
+        throw new Error('Too buguy to be used');
     }
 
     public run(argv: string[] = []) {
         let query: string = null;
         let host: string = null;
         if (argv.length > 1) {
-            query = argv[1].toLowerCase().trim();
+            query = argv[1].toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
         }
         if (argv.length > 2) {
             host = Utils.getHostFromUrl(argv[2]);
@@ -113,12 +115,12 @@ export class Cli {
         let start: Observable<string> = this.ask('What would you to search ?');
 
         if (query) {
-            start = of(query);
+            start = of(query.normalize('NFD').replace(/[\u0300-\u036f]/g, ''));
         }
 
         return start.pipe(
             switchMap(query => {
-                this.spinner.start('Searching in the first page of ' + this.sites.map(s => s.host).join(', '));
+                this.spinner.start('Searching on ' + this.sites.map(s => s.host).join(', '));
                 const obsSites: Observable<Page[]>[] = [];
                 this.sites.forEach(site => obsSites.push(site.search(query)));
                 return combineLatest(obsSites).pipe(map(res => [].concat(...res)));
@@ -285,7 +287,7 @@ export class Cli {
             return of([]);
         }
 
-        return Observable.create(observer => {
+        return new Observable<any | any[]>(observer => {
             prompt({
                 type: multiple ? 'multiselect' : 'select',
                 name: 'choice',
