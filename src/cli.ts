@@ -297,7 +297,7 @@ export class Cli {
                     return {
                         name: m.text,
                         message: m.text,
-                        value: m
+                        value: m as any // hint
                     };
                 }),
                 result(value) {
