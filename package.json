@@ -1,8 +1,8 @@
 {
-  "name": "download-site-search",
-  "version": "1.2.2",
-  "description": "Tools to search download links from warez sites",
-  "repository": "https://github.com/valentintintin/download-sites-automation",
+  "name": "pixel-download",
+  "version": "1.2.3",
+  "description": "Tools to search download links from french warez sites",
+  "repository": "https://github.com/valentintintin/pixel-downloader",
   "main": "src/index.ts",
   "dependencies": {
     "cheerio": "^0.22.0",
