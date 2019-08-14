@@ -106,6 +106,11 @@ export class MegaTelechargement extends Site {
                         pageDetail.fileLinks.push(new Link(element.firstChild.data, element.attribs.href, this.findText(linkInfo)));
                     }
                 });
+                $('.corps center:last-of-type b:nth-child(odd)').each((index, element) => {
+                    const host = this.findText(element.children);
+                    const link = $('a', element.next.next);
+                    pageDetail.fileLinks.push(new Link('Premium', link.first().attr('href'), host));
+                });
                 return pageDetail;
             })
         );

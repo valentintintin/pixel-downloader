@@ -101,7 +101,9 @@ export class ExtremeDownload extends Site {
 
                 pageDetail.fileLinks = [];
                 $('.blockcontent div a').each((index, element) => {
-                    if ((
+                    if (
+                        element.attribs.href &&
+                        (
                             !element.attribs.href.includes('shop') &&
                             !element.attribs.href.includes('prezup') &&
                             element.parent.name === 'div'

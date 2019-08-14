@@ -6,6 +6,9 @@ export class Link {
         public host: string = null,
     ) {
         this.title = title.replace('Télécharger', '').trim();
+        if (!url) {
+            throw new Error('Link created with empty url');
+        }
         this.url = url.trim();
 
         if (!host) {
