@@ -7,7 +7,7 @@ import { Link } from '../models/link';
 export class ZoneTelechargement extends Site {
 
     constructor() {
-        super('https://www.zone-telechargement.vip', 'index.php', [
+        super('https://www.zone-telechargement2.vip/', 'index.php', [
             [
                 'do',
                 'search'
@@ -102,7 +102,10 @@ export class ZoneTelechargement extends Site {
             map(($: CheerioStatic) => {
                 const pageEl = $('h2').find('b');
                 const pageElInfo = pageEl.parent().next();
-                const pageImg = $('.jaquette');
+                let pageImg = $('.jaquette');
+                if (pageImg.empty()) {
+                    pageImg = $('center > img:first-child');
+                }
                 const pageDetail = new Page(
                     pageEl.text().trim() + ' ' + pageElInfo.text().trim(),
                     url,

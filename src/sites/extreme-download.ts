@@ -7,7 +7,7 @@ import { Link } from '../models/link';
 export class ExtremeDownload extends Site {
 
     constructor() {
-        super('https://ww5.extreme-download.co', 'home.html', [
+        super('https://www18.extreme-download.co/', 'home.html', [
             [
                 'do',
                 'search'
@@ -100,7 +100,7 @@ export class ExtremeDownload extends Site {
                 });
 
                 pageDetail.fileLinks = [];
-                $('.blockcontent div a').each((index, element) => {
+                $('.blockcontent a').each((index, element) => {
                     if (
                         element.attribs.href &&
                         (
@@ -108,18 +108,17 @@ export class ExtremeDownload extends Site {
                             !element.attribs.href.includes('shop') &&
                             !element.attribs.href.includes('prezup') &&
                             !element.attribs.href.includes('register') &&
-                            (element.parent.name === 'div' || element.parent.name === 'strong')
+                            ['div', 'strong', 'p'].includes(element.parent.name)
                         ) &&
-                        (!element.attribs.title || !element.attribs.title.includes('Regarder'))) {
-                        let title: string = this.findText(element);
+                        (!element.attribs.title || !element.attribs.title.includes('Regarder')) &&
+                        element.attribs.target
+                    ) {
+                        let title: string = this.findText(element.children);
                         let host: string = null;
                         let hostSplited: string[] = title.split(' ');
-                        if (hostSplited.length <= 1) {
-                            hostSplited = this.findText(element.parent).split(' ');
-                        }
-                        if (hostSplited.length > 1) {
-                            title = hostSplited.slice(1).join().trim();
-                            host = hostSplited[0].trim();
+                        if (hostSplited.length >= 1) {
+                            title = hostSplited.pop().trim();
+                            host = hostSplited.join(' ').replace('-', '').trim();
                         }
                         pageDetail.fileLinks.push(new Link(title, this.getLinkWithBaseIfNeeded(element.attribs.href), host));
                     }

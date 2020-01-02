@@ -7,7 +7,6 @@ import { combineLatest, Observable, of } from 'rxjs';
 import { map, switchMap, tap } from 'rxjs/operators';
 import { prompt } from 'enquirer';
 import { Page } from './models/page';
-import { MegaTelechargement } from './sites/mega-telechargement';
 import { Utils } from './utils';
 import { NoLinkException } from './models/no-link.exception';
 import { ExtremeDownload } from './sites/extreme-download';
@@ -19,7 +18,7 @@ export class Cli {
     private readonly jd = new Jdownloader(config.JDOWNLOADER_LOGIN, config.JDOWNLOADER_PASSWORD, config.JDOWNLOADER_DEVICE_NAME);
     private readonly sites: Site[] = [
         new ZoneTelechargement(),
-        new MegaTelechargement(),
+        // new MegaTelechargement(),
         new AnnuaireTelechargement(),
         new ExtremeDownload()
     ];

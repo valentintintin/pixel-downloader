@@ -2,7 +2,6 @@ import { Jdownloader } from './jdownloader';
 import * as config from './config';
 import { Site } from './sites/site';
 import { ZoneTelechargement } from './sites/zone-telechargement';
-import { MegaTelechargement } from './sites/mega-telechargement';
 import { Page } from './models/page';
 import * as express from 'express';
 import { PageDto } from './models/dto/page-dto';
@@ -18,7 +17,7 @@ export class Api {
     private readonly jd = new Jdownloader(config.JDOWNLOADER_LOGIN, config.JDOWNLOADER_PASSWORD, config.JDOWNLOADER_DEVICE_NAME);
     private readonly sites: Site[] = [
         new ZoneTelechargement(),
-        new MegaTelechargement(),
+        // new MegaTelechargement(),
         new AnnuaireTelechargement(),
         new ExtremeDownload()
     ];
