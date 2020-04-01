@@ -54,7 +54,7 @@ export abstract class Site {
             .toLowerCase();
 
         return new Observable<string>(observer => {
-            cloudscraper.get(this.getLinkWithBaseIfNeeded(url)).then(data => observer.next(data), error => observer.error(error));
+            (cloudscraper as any).get(this.getLinkWithBaseIfNeeded(url)).then(data => observer.next(data), error => observer.error(error));
         }).pipe(
             map(data => Cheerio.load(data)),
             catchError(err => {
