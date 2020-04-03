@@ -1,0 +1,48 @@
+<mat-toolbar color="primary">
+    <h1><a href="https://github.com/valentintintin/pixel-downloader" target="_blank">Pixel Downloader</a></h1>
+
+    <div class="actions">
+        <a href="mailto:valentin.s.10@gmail.com?subject=[PixelDownload] Proposer un site&body=Nouveau site : "
+           mat-flat-button color="primary" target="_blank">Proposer un site ?</a>
+        <a href="mailto:valentin.s.10@gmail.com?subject=[PixelDownload] Rapport de bug&body=Navigateur : {{ userAgent }}%0D%0ACommentaire du bug :"
+           mat-flat-button color="accent" target="_blank">Un bug ?</a>
+    </div>
+</mat-toolbar>
+
+<main>
+    <div class="search">
+        <h2>Rechercher</h2>
+
+        <div class="sites">
+            <span>Sites actuellement utilisés :&nbsp;</span>
+            <mat-chip-list>
+                <mat-chip *ngFor="let site of apiService.getSites() | async"><a target="_blank"
+                                                                                [href]="site.url">{{ site.title }}</a>
+                </mat-chip>
+            </mat-chip-list>
+        </div>
+
+        <form (ngSubmit)="search(searchInput.value)">
+            <mat-form-field appearance="outline">
+                <mat-label>Mots clés</mat-label>
+                <input #searchInput matInput placeholder="doctor who"/>
+            </mat-form-field>
+
+            <button mat-raised-button color="primary" type="submit">Rechercher</button>
+        </form>
+    </div>
+
+    <div>
+        <h2>Liens :</h2>
+        <mat-progress-bar mode="buffer" [value]="querySiteProgress" *ngIf="querySiteProgress"></mat-progress-bar>
+        <div class="results">
+            <div class="result" *ngFor="let page of results | async" (click)="openDetails(page)">
+                <div><img *ngIf="page.image" [src]="page.image" [alt]="page.title"/></div>
+                <div class="details">
+                    <b>{{ page.title }}</b>
+                    <i>{{ page.host }}</i>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>

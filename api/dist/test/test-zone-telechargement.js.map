@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "test-zone-telechargement.js",
+  "sourceRoot": "",
+  "sources": [
+    "../../src/test/test-zone-telechargement.ts"
+  ],
+  "names": [],
+  "mappings": ";;AAAA,sEAAkE;AAElE,MAAM,IAAI,GAAG,IAAI,wCAAkB,EAAE,CAAC;AAEtC,IAAI,CAAC,UAAU,EAAE,CAAC,SAAS,CAAC,GAAG,CAAC,EAAE,CAAC,OAAO,CAAC,GAAG,CAAC,GAAG,CAAC,CAAC,CAAC"
+}

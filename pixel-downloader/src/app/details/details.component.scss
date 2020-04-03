@@ -1,0 +1,29 @@
+h3 {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+mat-dialog-content {
+    text-align: center;
+
+    mat-chip {
+        cursor: pointer;
+    }
+
+    img {
+        margin: 10px 0;
+        max-width: 350px;
+    }
+
+    .loader {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+
+        mat-progress-spinner {
+            margin-bottom: 10px;
+        }
+    }
+}

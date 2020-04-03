@@ -1,0 +1,38 @@
+<h3>
+    <span>{{ (details | async).title }}</span>
+    <a [href]="(details | async).url" target="_blank" matTooltip="Voir le site" mat-icon-button>
+        <mat-icon>open_in_new</mat-icon>
+    </a>
+</h3>
+
+<mat-dialog-content>
+    <div *ngIf="(details | async)?.fileLinks?.length > 0; else loading">
+        <mat-chip-list *ngIf="(details | async).relatedPage?.length > 0">
+            <mat-chip *ngFor="let link of (details | async).relatedPage" (click)="openDetails(link)"
+                      matTooltip="Charger cette version">{{ link.title }}</mat-chip>
+        </mat-chip-list>
+
+        <img *ngIf="(details | async).image" [src]="(details | async).image" [alt]="(details | async).title"/>
+
+        <div>
+            <h4>Liens</h4>
+            <div *ngFor="let host of (details | async).fileLinksByHost | pairs">
+                <h5 *ngIf="host[0] !== 'null'">{{ host[0] }}</h5>
+                <div *ngFor="let link of host[1]">
+                    <a target="_blank" [href]="link.url">{{ link.title ? link.title : 'Télécharger' }}</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <ng-template #loading>
+        <div class="loader">
+            <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+            <b>Chargement depuis {{ (details | async).host }}</b>
+        </div>
+    </ng-template>
+</mat-dialog-content>
+
+<mat-dialog-actions>
+    <button mat-button mat-dialog-close>Fermer</button>
+</mat-dialog-actions>
