@@ -1,5 +1,5 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", {value: true});
+Object.defineProperty(exports, "__esModule", { value: true });
 const cli_1 = require("./cli");
 const api_1 = require("./api");
 if (process.argv.length >= 2) {

@@ -1,10 +1,9 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", {value: true});
+Object.defineProperty(exports, "__esModule", { value: true });
 const site_1 = require("./site");
 const page_1 = require("../models/page");
 const operators_1 = require("rxjs/operators");
 const link_1 = require("../models/link");
-
 class MegaTelechargement extends site_1.Site {
     constructor() {
         super('https://www.mega-telechargements.com', 'index.php', [
@@ -78,7 +77,6 @@ class MegaTelechargement extends site_1.Site {
             ]
         ], 'story');
     }
-
     getDetails(url) {
         return this.runRequest(url).pipe(operators_1.map(($) => {
             const pageEl = $('.corps h1');
@@ -103,12 +101,10 @@ class MegaTelechargement extends site_1.Site {
             return pageDetail;
         }));
     }
-
     getRecents() {
         const a = this.name;
         return this.runRss('rss.xml').pipe(operators_1.map(items => items.map(i => new page_1.Page(i.title, i.link, this))));
     }
-
     search(query) {
         return this.runRequest(this.getSearchUrl(query)).pipe(operators_1.map(($) => {
             const pages = [];
@@ -121,6 +117,5 @@ class MegaTelechargement extends site_1.Site {
         }));
     }
 }
-
 exports.MegaTelechargement = MegaTelechargement;
 //# sourceMappingURL=mega-telechargement.js.map

@@ -17,65 +17,9 @@ export class ExtremeDownload extends Site {
                 'search'
             ],
             [
-                'search_start',
-                '1'
-            ],
-            [
-                'full_search',
-                '1'
-            ],
-            [
-                'result_from',
-                '1'
-            ],
-            [
                 'story',
                 'query'
             ],
-            [
-                'all_word_seach',
-                '0'
-            ],
-            [
-                'titleonly',
-                '3'
-            ],
-            [
-                'searchuser',
-                ''
-            ],
-            [
-                'replyless',
-                '0'
-            ],
-            [
-                'replylimit',
-                '0'
-            ],
-            [
-                'searchdate',
-                '0'
-            ],
-            [
-                'beforeafter',
-                'after'
-            ],
-            [
-                'sortby',
-                'date'
-            ],
-            [
-                'resorder',
-                'desc'
-            ],
-            [
-                'showposts',
-                '0'
-            ],
-            [
-                'catlist%5B%5D',
-                '0'
-            ]
         ], 'story');
     }
 

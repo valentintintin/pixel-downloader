@@ -1,5 +1,5 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", {value: true});
+Object.defineProperty(exports, "__esModule", { value: true });
 const jdownloader_1 = require("./jdownloader");
 const config = require("./config");
 const zone_warez_1 = require("./sites/zone-warez");
@@ -11,7 +11,6 @@ const no_link_exception_1 = require("./models/no-link.exception");
 const extreme_download_1 = require("./sites/extreme-download");
 const zone_annuaire_1 = require("./sites/zone-annuaire");
 const ora = require("ora");
-
 class Cli {
     constructor() {
         this.jd = new jdownloader_1.Jdownloader(config.JDOWNLOADER_LOGIN, config.JDOWNLOADER_PASSWORD, config.JDOWNLOADER_DEVICE_NAME);
@@ -22,7 +21,6 @@ class Cli {
         ];
         this.spinner = ora();
     }
-
     run(argv = []) {
         let query = null;
         let host = null;
@@ -62,7 +60,6 @@ class Cli {
                 break;
         }
     }
-
     main() {
         this.menu('What would you like to do ?', [
             {
@@ -90,7 +87,8 @@ class Cli {
                     console.error(err.message);
                     this.main();
                 }), () => this.main());
-            } else {
+            }
+            else {
                 console.log('Bye !');
                 process.exit(0);
             }
@@ -99,7 +97,6 @@ class Cli {
             process.exit(0);
         });
     }
-
     doSearch(query = null, host = null) {
         let start = this.ask('What would you to search ?');
         if (query) {
@@ -120,7 +117,6 @@ class Cli {
             }));
         }), operators_1.switchMap(result => this.selectPageVersionAndLinks(result[0], host)));
     }
-
     doJdownloaderFlush() {
         this.spinner = ora('Adding links to JDownloader');
         return rxjs_1.Observable.create(observer => {
@@ -131,7 +127,6 @@ class Cli {
             this.spinner.succeed('Result: ' + res);
         }));
     }
-
     doJdownloaderGet() {
         this.spinner = ora('Getting links from JDownloader');
         return rxjs_1.Observable.create(observer => {
@@ -143,7 +138,6 @@ class Cli {
             console.log(res.map(l => l.toString() + ' - ' + l.url).join('\n'));
         }));
     }
-
     doRecents(query = null, host = null) {
         this.spinner.start('Getting recents in ' + this.sites.map(s => s.name).join(', '));
         const obsSites = [];
@@ -158,7 +152,6 @@ class Cli {
             }).sort((a, b) => a.text < b.text ? -1 : 1));
         }), operators_1.switchMap(result => this.selectPageVersionAndLinks(result[0], host)));
     }
-
     selectPageVersionAndLinks(page, host = null) {
         if (!page) {
             throw new no_link_exception_1.NoLinkException('No link found :(');
@@ -195,7 +188,6 @@ class Cli {
             return this.selectLinksToSave(links, host);
         }));
     }
-
     selectLinksToSave(links, hostUser = null) {
         const hosts = [];
         links.forEach(link => {
@@ -214,7 +206,8 @@ class Cli {
         }).sort((a, b) => a.text < b.text ? -1 : 1), true);
         if (hostUser !== null) {
             start = rxjs_1.of([hostUser]);
-        } else if (hosts.length === 1) {
+        }
+        else if (hosts.length === 1) {
             start = rxjs_1.of(hosts);
         }
         return start.pipe(operators_1.switchMap((hostsSelected) => {
@@ -236,7 +229,6 @@ class Cli {
             }));
         }));
     }
-
     menu(text, items, multiple = false) {
         if (items.length === 0) {
             return rxjs_1.of([]);
@@ -258,7 +250,8 @@ class Cli {
                     let names;
                     if (!Array.isArray(value)) {
                         names = [value];
-                    } else {
+                    }
+                    else {
                         names = value;
                     }
                     return names.map(name => this.choices.find(choice => choice.name === name).value);
@@ -273,7 +266,6 @@ class Cli {
             });
         });
     }
-
     ask(text) {
         return rxjs_1.Observable.create(observer => {
             enquirer_1.prompt({
@@ -290,6 +282,5 @@ class Cli {
         });
     }
 }
-
 exports.Cli = Cli;
 //# sourceMappingURL=cli.js.map

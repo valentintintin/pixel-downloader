@@ -1,10 +1,1 @@
-{
-  "version": 3,
-  "file": "no-link.exception.js",
-  "sourceRoot": "",
-  "sources": [
-    "../../src/models/no-link.exception.ts"
-  ],
-  "names": [],
-  "mappings": ";;AAAA,MAAa,eAAgB,SAAQ,KAAK;IAEtC,YAAY,OAAe;QACvB,KAAK,CAAC,OAAO,GAAG,OAAO,CAAC,CAAC;IAC7B,CAAC;CACJ;AALD,0CAKC"
-}
+{"version":3,"file":"no-link.exception.js","sourceRoot":"","sources":["../../src/models/no-link.exception.ts"],"names":[],"mappings":";;AAAA,MAAa,eAAgB,SAAQ,KAAK;IAEtC,YAAY,OAAe;QACvB,KAAK,CAAC,OAAO,GAAG,OAAO,CAAC,CAAC;IAC7B,CAAC;CACJ;AALD,0CAKC"}

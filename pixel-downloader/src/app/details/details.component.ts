@@ -30,9 +30,9 @@ export class DetailsComponent implements OnInit, OnDestroy {
 
   public openDetails(link: PageDto): void {
     this.subscription.add(this.apiService.getDetails(link).subscribe(details => this.details.next(details), (err: Error) => {
-      this.snackbar.open(err ? err.message : 'Une erreur est survenue', 'OK', {
+      this.snackbar.open(err ? err.message : 'Une erreur est survenue', 'Ouvrir le site', {
         duration: 5000
-      });
+      }).onAction().subscribe(_ => window.open(link.url, '_blank'));
       this.dialogRef.close();
     }));
   }

@@ -1,10 +1,9 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", {value: true});
+Object.defineProperty(exports, "__esModule", { value: true });
 const site_1 = require("./site");
 const page_1 = require("../models/page");
 const operators_1 = require("rxjs/operators");
 const link_1 = require("../models/link");
-
 class ExtremeDownload extends site_1.Site {
     constructor() {
         super('https://www3.extremedownload.ninja/', 'home.html', [
@@ -17,68 +16,11 @@ class ExtremeDownload extends site_1.Site {
                 'search'
             ],
             [
-                'search_start',
-                '1'
-            ],
-            [
-                'full_search',
-                '1'
-            ],
-            [
-                'result_from',
-                '1'
-            ],
-            [
                 'story',
                 'query'
             ],
-            [
-                'all_word_seach',
-                '0'
-            ],
-            [
-                'titleonly',
-                '3'
-            ],
-            [
-                'searchuser',
-                ''
-            ],
-            [
-                'replyless',
-                '0'
-            ],
-            [
-                'replylimit',
-                '0'
-            ],
-            [
-                'searchdate',
-                '0'
-            ],
-            [
-                'beforeafter',
-                'after'
-            ],
-            [
-                'sortby',
-                'date'
-            ],
-            [
-                'resorder',
-                'desc'
-            ],
-            [
-                'showposts',
-                '0'
-            ],
-            [
-                'catlist%5B%5D',
-                '0'
-            ]
         ], 'story');
     }
-
     getDetails(url) {
         return this.runRequest(url).pipe(operators_1.map(($) => {
             const pageEl = $('#news-title');
@@ -110,11 +52,9 @@ class ExtremeDownload extends site_1.Site {
             return pageDetail;
         }));
     }
-
     getRecents() {
         return this.runRss('rss.xml').pipe(operators_1.map(items => items.map(i => new page_1.Page(i.title, i.link, this))));
     }
-
     search(query) {
         return this.runRequest(this.getSearchUrl(query)).pipe(operators_1.map(($) => {
             const pages = [];
@@ -126,6 +66,5 @@ class ExtremeDownload extends site_1.Site {
         }));
     }
 }
-
 exports.ExtremeDownload = ExtremeDownload;
 //# sourceMappingURL=extreme-download.js.map

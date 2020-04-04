@@ -1,5 +1,5 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", {value: true});
+Object.defineProperty(exports, "__esModule", { value: true });
 const mega_telechargement_1 = require("../sites/mega-telechargement");
 describe('MegaTelechargement', () => {
     const site = new mega_telechargement_1.MegaTelechargement();

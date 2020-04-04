@@ -7,6 +7,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { DetailsComponent, DetailsComponentData } from './details/details.component';
 import { WarningComponent } from './warning/warning.component';
 import { CookieService } from 'ngx-cookie-service';
+import * as Fuse from 'fuse.js';
 
 @Component({
     selector: 'app-root',
@@ -19,13 +20,13 @@ export class AppComponent implements OnInit, OnDestroy {
     results = new BehaviorSubject<PageDto[]>([]);
     querySiteProgress: number = null;
 
-    susbcriptions = new Subscription();
+    private susbcriptions: Subscription;
 
     constructor(public apiService: ApiService, private dialog: MatDialog, private coockieService: CookieService) {
     }
 
     ngOnInit(): void {
-        this.getRecents();
+        this.susbcriptions = this.apiService.getSites().subscribe();
 
         if (!this.coockieService.check('disclaimer')) {
             this.dialog.open(WarningComponent, {
@@ -40,36 +41,54 @@ export class AppComponent implements OnInit, OnDestroy {
     }
 
     public getRecents(): void {
+        if (this.susbcriptions) {
+            this.susbcriptions.unsubscribe();
+            this.susbcriptions = null;
+        }
         this.results.next([]);
-        this.susbcriptions.add(
+        this.querySiteProgress = 0;
+        this.susbcriptions =
             this.apiService.getSites().pipe(
                 switchMap(sites => forkJoin(
                     sites.map(site => this.apiService.getRecent(site.title).pipe(
                         tap(recents => {
                             this.querySiteProgress += 1 / sites.length * 100;
-                            this.results.next([].concat.apply(this.results.getValue(), recents));
+                            this.results.next([].concat.apply(this.results.getValue(), recents).sort((a, b) => a.title < b.title ? -1 : 1));
                         }))
                     )
                 ))
-            ).subscribe(_ => this.querySiteProgress = null)
-        );
+            ).subscribe(_ => {
+                this.querySiteProgress = null;
+                this.results.next(this.results.getValue().sort((a, b) => a.title < b.title ? -1 : 1));
+            });
     }
 
     public search(query: string): void {
         if (query) {
+            if (this.susbcriptions) {
+                this.susbcriptions.unsubscribe();
+                this.susbcriptions = null;
+            }
             this.results.next([]);
-            this.susbcriptions.add(
+            this.querySiteProgress = 0;
+            this.susbcriptions =
                 this.apiService.getSites().pipe(
                     switchMap(sites => forkJoin(
                         sites.map(site => this.apiService.search(site.title, query).pipe(
                             tap(results => {
                                 this.querySiteProgress += 1 / sites.length * 100;
-                                this.results.next([].concat.apply(this.results.getValue(), results));
+                                this.results.next(this.sortFuse(query, [].concat.apply(this.results.getValue(), results)));
                             })
                         ))
                     ))
-                ).subscribe(_ => this.querySiteProgress = null)
-            );
+                ).subscribe(_ => {
+                    this.querySiteProgress = null;
+                    this.results.next(this.sortFuse(query, this.results.getValue()));
+                });
+        } else {
+            // this.getRecents();
+            this.results.next([]);
+            this.querySiteProgress = null;
         }
     }
 
@@ -81,5 +100,13 @@ export class AppComponent implements OnInit, OnDestroy {
                 link: link
             } as DetailsComponentData
         });
+    }
+
+    private sortFuse(query: string, pages: PageDto[]): PageDto[] {
+        const fuseDatas = new Fuse(pages, {
+            shouldSort: true,
+            keys: ['title']
+        });
+        return fuseDatas.search(query) as any;
     }
 }

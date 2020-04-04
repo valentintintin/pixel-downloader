@@ -1,10 +1,9 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", {value: true});
+Object.defineProperty(exports, "__esModule", { value: true });
 const rxjs_1 = require("rxjs");
 const operators_1 = require("rxjs/operators");
 const link_1 = require("./models/link");
 const JdownloaderApi = require("jdownloader-api");
-
 class Jdownloader {
     constructor(username, password, deviceName) {
         this.username = username;
@@ -12,7 +11,6 @@ class Jdownloader {
         this.deviceName = deviceName;
         this.linksToAdd = [];
     }
-
     addLinkToQueue(link) {
         if (!this.linksToAdd.find(l => l.url === link.url)) {
             this.linksToAdd.push(link);
@@ -20,7 +18,6 @@ class Jdownloader {
         }
         return false;
     }
-
     getLinksFromServer() {
         return this.connect().pipe(operators_1.switchMap(() => {
             return rxjs_1.Observable.create(observer => {
@@ -34,7 +31,6 @@ class Jdownloader {
             });
         }));
     }
-
     addLinksToQueue(links) {
         const linksAdded = [];
         links.forEach(link => {
@@ -44,7 +40,6 @@ class Jdownloader {
         });
         return linksAdded;
     }
-
     flushQueueToServer() {
         if (!this.linksToAdd.length) {
             return rxjs_1.of(null);
@@ -74,7 +69,6 @@ class Jdownloader {
             });
         }));
     }
-
     connect() {
         return rxjs_1.Observable.create(observer => {
             JdownloaderApi.connect(this.username, this.password).then(() => {
@@ -85,7 +79,8 @@ class Jdownloader {
                             this.deviceId = device.id;
                             observer.next(this.deviceId);
                             observer.complete();
-                        } else {
+                        }
+                        else {
                             observer.error(this.deviceName + ' not found');
                             observer.complete();
                         }
@@ -93,7 +88,8 @@ class Jdownloader {
                         observer.error(err);
                         observer.complete();
                     });
-                } else {
+                }
+                else {
                     observer.next(this.deviceId);
                     observer.complete();
                 }
@@ -103,11 +99,9 @@ class Jdownloader {
             });
         });
     }
-
     disconnect() {
         return JdownloaderApi.disconnect();
     }
 }
-
 exports.Jdownloader = Jdownloader;
 //# sourceMappingURL=jdownloader.js.map

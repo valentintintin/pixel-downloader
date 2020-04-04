@@ -1,119 +1,80 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", {value: true});
+Object.defineProperty(exports, "__esModule", { value: true });
 const site_1 = require("./site");
-const operators_1 = require("rxjs/operators");
+const rxjs_1 = require("rxjs");
 const page_1 = require("../models/page");
+const operators_1 = require("rxjs/operators");
 const link_1 = require("../models/link");
-
 class ZoneTelechargement extends site_1.Site {
     constructor() {
-        super('https://www.zone-telechargement2.vip/', 'index.php', [
+        super('https://www.zone-telechargement.ninja/', 'index.php', [
             [
-                'do',
-                'search'
+                'p',
+                'type'
             ],
             [
-                'subaction',
-                'search'
-            ],
-            [
-                'search_start',
-                '1'
-            ],
-            [
-                'full_search',
-                '1'
-            ],
-            [
-                'result_from',
-                '1'
-            ],
-            [
-                'story',
+                'search',
                 'query'
             ],
-            [
-                'all_word_seach',
-                '0'
-            ],
-            [
-                'titleonly',
-                '3'
-            ],
-            [
-                'searchuser',
-                ''
-            ],
-            [
-                'replyless',
-                '0'
-            ],
-            [
-                'replylimit',
-                '0'
-            ],
-            [
-                'searchdate',
-                '0'
-            ],
-            [
-                'beforeafter',
-                'after'
-            ],
-            [
-                'sortby',
-                'date'
-            ],
-            [
-                'resorder',
-                'desc'
-            ],
-            [
-                'showposts',
-                '0'
-            ],
-            [
-                'catlist%5B%5D',
-                '0'
-            ]
-        ], 'story');
+        ], 'search', 'p');
     }
-
-    search(query) {
-        return this.runRequest(this.getSearchUrl(query)).pipe(operators_1.map(($) => {
-            const pages = [];
-            $('.mov > a:first-child').each((index, element) => {
-                const pageImg = $('img', element);
-                pages.push(new page_1.Page(element.attribs.title, element.attribs.href, this, !pageImg.length ? null : pageImg.attr('src')));
-            });
-            return pages;
-        }));
-    }
-
     getDetails(url) {
         return this.runRequest(url).pipe(operators_1.map(($) => {
-            const pageEl = $('h2').find('b');
-            const pageElInfo = pageEl.parent().next();
-            let pageImg = $('.jaquette');
-            if (pageImg.empty()) {
-                pageImg = $('center > img:first-child');
+            let pageEl = $('.corps .smallsep').next();
+            let title = pageEl.text() + ' ' + pageEl.next().text();
+            if (title.trim().length === 0) {
+                pageEl = $('.corps').children();
+                if (pageEl.length > 0) {
+                    pageEl = pageEl.first().children();
+                    if (pageEl.length > 0) {
+                        title = pageEl.first().text();
+                        if (pageEl.first().next()) {
+                            title += ' ' + pageEl.first().next().text();
+                        }
+                    }
+                }
             }
-            const pageDetail = new page_1.Page(pageEl.text().trim() + ' ' + pageElInfo.text().trim(), url, this, !pageImg.length ? null : (pageImg.attr('src') ? pageImg.attr('src') : pageImg.data('cfsrc')));
+            const pageImg = $('.fr-fic.fr-dib');
+            const pageImg2 = $('.corps center img:first-child');
+            const pageDetail = new page_1.Page(title, url, this, !pageImg.length ? !pageImg2.length ? null : pageImg2.attr('src') : pageImg.attr('src'));
             $('.otherversions a').each((index, element) => {
                 pageDetail.relatedPage.push(new page_1.Page(this.findText(element), element.attribs.href, this));
             });
-            const hosts = $('table.downloadsortsonlink');
-            hosts.find('thead th:first-child').each((index, element) => {
-                $('.download', hosts.get(index)).each((index1, linkElement) => pageDetail.fileLinks.push(new link_1.Link(this.findText(linkElement), this.getLinkWithBaseIfNeeded(linkElement.attribs.href), this.findText(element))));
+            pageDetail.fileLinks = [];
+            let lastHost = null;
+            $('.postinfo a').each((index, element) => {
+                if (element.parent.prev.firstChild !== null) {
+                    lastHost = element.parent.prev.firstChild.firstChild.data;
+                }
+                pageDetail.fileLinks.push(new link_1.Link(element.firstChild.data, this.getLinkWithBaseIfNeeded(element.attribs.href), lastHost));
+            });
+            $('.postinfo form').each((index, element) => {
+                if (element.parent.prev.firstChild !== null) {
+                    lastHost = element.parent.prev.firstChild.firstChild.data;
+                }
+                pageDetail.fileLinks.push(new link_1.Link('', pageDetail.url, lastHost));
             });
             return pageDetail;
         }));
     }
-
     getRecents() {
-        return this.runRss('rss.xml').pipe(operators_1.map(items => items.map(i => new page_1.Page(i.title, i.link, this))));
+        return rxjs_1.of([]);
+    }
+    search(query) {
+        return rxjs_1.combineLatest(['films', 'series'].map(type => this.searchPageProcess(query, type))).pipe(operators_1.map(results => [].concat.apply([], results).sort((a, b) => a.title < b.title ? -1 : 1)));
+    }
+    searchPageProcess(query, type) {
+        return this.runRequest(this.getSearchUrl(query, type)).pipe(operators_1.map(($) => {
+            const pages = [];
+            $('.cover_global').each((index, element) => {
+                const pageEl = $('.cover_infos_title a', element);
+                const pageElInfo = $('.cover_infos_title .detail_release', element);
+                const pageImg = $('.mainimg', element);
+                pages.push(new page_1.Page(pageEl.text() + ' ' + pageElInfo.text(), pageEl.attr('href'), this, !pageImg.length ? null : pageImg.attr('src')));
+            });
+            return pages;
+        }));
     }
 }
-
 exports.ZoneTelechargement = ZoneTelechargement;
 //# sourceMappingURL=zone-telechargement.js.map

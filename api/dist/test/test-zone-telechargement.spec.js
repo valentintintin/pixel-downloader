@@ -1,8 +1,8 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", {value: true});
-const zone_warez_1 = require("../sites/zone-warez");
+Object.defineProperty(exports, "__esModule", { value: true });
+const zone_telechargement_1 = require("../sites/zone-telechargement");
 describe('ZoneTelechargement', () => {
-    const site = new zone_warez_1.ZoneWarez();
+    const site = new zone_telechargement_1.ZoneTelechargement();
     test('Recents', done => {
         site.getRecents().subscribe(res => {
             console.log(res);
@@ -18,21 +18,7 @@ describe('ZoneTelechargement', () => {
         });
     });
     test('Détails 1', done => {
-        site.getDetails(site.baseUrl + '/telecharger-series/14483-doctor-who-2005-saison-1-hdtv-french.html').subscribe(res => {
-            console.log(res);
-            expect(res.fileLinks.length).toBeGreaterThan(0);
-            done();
-        });
-    });
-    test('Détails 2', done => {
-        site.getDetails(site.baseUrl + '/films-gratuit/463061-hippocrate-HDLight%201080p-French.html').subscribe(res => {
-            console.log(res);
-            expect(res.fileLinks.length).toBeGreaterThan(0);
-            done();
-        });
-    });
-    test('Détails 3', done => {
-        site.getDetails(site.baseUrl + '/films-gratuit/14045-tchernobyl-truefrench-dvdrip.html').subscribe(res => {
+        site.getDetails(site.baseUrl + '/?p=films&id=10486-doctor-who-the-day-of-the-doctor').subscribe(res => {
             console.log(res);
             expect(res.fileLinks.length).toBeGreaterThan(0);
             done();

@@ -16,8 +16,8 @@
         <div class="sites">
             <span>Sites actuellement utilisés :&nbsp;</span>
             <mat-chip-list>
-                <mat-chip *ngFor="let site of apiService.getSites() | async"><a target="_blank"
-                                                                                [href]="site.url">{{ site.title }}</a>
+                <mat-chip *ngFor="let site of apiService.sites$() | async">
+                    <a target="_blank" [href]="site.url">{{ site.title }}</a>
                 </mat-chip>
             </mat-chip-list>
         </div>
@@ -35,14 +35,14 @@
     <div>
         <h2>Liens :</h2>
         <mat-progress-bar mode="buffer" [value]="querySiteProgress" *ngIf="querySiteProgress"></mat-progress-bar>
-        <div class="results">
-            <div class="result" *ngFor="let page of results | async" (click)="openDetails(page)">
-                <div><img *ngIf="page.image" [src]="page.image" [alt]="page.title"/></div>
-                <div class="details">
-                    <b>{{ page.title }}</b>
-                    <i>{{ page.host }}</i>
-                </div>
-            </div>
+        <div class="results" *ngIf="(results | async).length > 0; else empty">
+            <figure class="result mat-elevation-z1" *ngFor="let page of results | async" (click)="openDetails(page)">
+                <figcaption>{{ page.title }}</figcaption>
+                <img [src]="page.image ? page.image : './assets/poster-placeholder.png'" [alt]="page.title"/>
+            </figure>
         </div>
+        <ng-template #empty>
+            Aucun résultat :'(
+        </ng-template>
     </div>
 </main>

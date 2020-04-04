@@ -1,5 +1,5 @@
 import { Site } from './site';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Page } from '../models/page';
 import { Link } from '../models/link';
@@ -18,7 +18,7 @@ export class ZoneWarez extends Site {
             ],
             [
                 'search_start',
-                '1'
+                '0'
             ],
             [
                 'full_search',
@@ -32,50 +32,6 @@ export class ZoneWarez extends Site {
                 'story',
                 'query'
             ],
-            [
-                'all_word_seach',
-                '0'
-            ],
-            [
-                'titleonly',
-                '3'
-            ],
-            [
-                'searchuser',
-                ''
-            ],
-            [
-                'replyless',
-                '0'
-            ],
-            [
-                'replylimit',
-                '0'
-            ],
-            [
-                'searchdate',
-                '0'
-            ],
-            [
-                'beforeafter',
-                'after'
-            ],
-            [
-                'sortby',
-                'date'
-            ],
-            [
-                'resorder',
-                'desc'
-            ],
-            [
-                'showposts',
-                '0'
-            ],
-            [
-                'catlist%5B%5D',
-                '0'
-            ]
         ], 'story');
     }
 
@@ -135,8 +91,9 @@ export class ZoneWarez extends Site {
     }
 
     public getRecents(): Observable<Page[]> {
-        return this.runRss('rss.xml').pipe(
-            map(items => items.map(i => new Page(i.title, i.link, this)))
-        );
+        return of([]);
+        // return this.runRss('rss.xml').pipe(
+        //     map(items => items.map(i => new Page(i.title, i.link, this)))
+        // );
     }
 }

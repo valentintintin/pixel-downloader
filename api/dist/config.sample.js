@@ -1,5 +1,5 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", {value: true});
+Object.defineProperty(exports, "__esModule", { value: true });
 exports.JDOWNLOADER_LOGIN = '';
 exports.JDOWNLOADER_PASSWORD = '';
 exports.JDOWNLOADER_DEVICE_NAME = '';

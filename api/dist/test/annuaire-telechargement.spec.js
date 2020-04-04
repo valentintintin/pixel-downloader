@@ -1,5 +1,5 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", {value: true});
+Object.defineProperty(exports, "__esModule", { value: true });
 const zone_annuaire_1 = require("../sites/zone-annuaire");
 describe('AnnuraireTelechargement', () => {
     const site = new zone_annuaire_1.ZoneAnnuaire();

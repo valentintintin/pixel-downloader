@@ -11,7 +11,6 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import { MatGridListModule } from '@angular/material/grid-list';
 import { DetailsComponent } from './details/details.component';
 import { MatDialogModule } from '@angular/material/dialog';
 import { NgPipesModule } from 'ngx-pipes';
@@ -22,6 +21,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { WarningComponent } from './warning/warning.component';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { ApiService } from './api.service';
+import { CookieService } from 'ngx-cookie-service';
 
 @NgModule({
     declarations: [
@@ -46,7 +47,6 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
         MatFormFieldModule,
         MatInputModule,
         MatButtonModule,
-        MatGridListModule,
         MatDialogModule,
         FormsModule,
         MatIconModule,
@@ -54,7 +54,10 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
         MatProgressSpinnerModule,
         MatProgressBarModule
     ],
-    providers: [],
+    providers: [
+        ApiService,
+        CookieService
+    ],
     bootstrap: [AppComponent]
 })
 export class AppModule {

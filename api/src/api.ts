@@ -4,10 +4,11 @@ import { ZoneWarez } from './sites/zone-warez';
 import { Page } from './models/page';
 import * as express from 'express';
 import { PageDto } from './models/dto/page-dto';
-import * as path from 'path';
 import { ExtremeDownload } from './sites/extreme-download';
 import { ZoneAnnuaire } from './sites/zone-annuaire';
 import { LinkDto } from './models/dto/link-dto';
+import { ZoneTelechargement } from './sites/zone-telechargement';
+import { AnnuaireTelechargement } from './sites/annuaire-telechargement';
 
 export class Api {
 
@@ -15,7 +16,9 @@ export class Api {
     private readonly sites: Site[] = [
         new ZoneWarez(),
         new ZoneAnnuaire(),
-        new ExtremeDownload()
+        new ExtremeDownload(),
+        new ZoneTelechargement(),
+        new AnnuaireTelechargement(),
     ];
 
     private getSiteByName(name: string): Site {
@@ -24,6 +27,7 @@ export class Api {
 
     constructor() {
         this.app.use(express.json());
+        this.app.use(express.static('public'));
 
         this.app.use((req, res, next) => {
             console.log(new Date().toLocaleString(), req.method, req.path, 'start');
@@ -43,29 +47,25 @@ export class Api {
             res.send();
         });
 
-        this.app.get('/', (req, res, next) => {
-            res.sendFile(path.join(__dirname + '/../assets/index.html'));
-        });
-
-        this.app.get('/sites', (req, res, next) => {
+        this.app.get('/api/sites', (req, res, next) => {
             res.json(this.sites.map(s => new LinkDto(s.name, s.baseUrl, s.baseUrl)));
         });
 
-        this.app.get('/recents/:siteName', (req, res, next) => {
+        this.app.get('/api/recents/:siteName', (req, res, next) => {
             this.getSiteByName(req.params['siteName']).getRecents()
                 .subscribe(results => {
                     res.json(results.map((p: Page) => PageDto.fromObject(p)));
                 }, err => next(err));
         });
 
-        this.app.get('/search/:siteName', (req, res, next) => {
+        this.app.get('/api/search/:siteName', (req, res, next) => {
             this.getSiteByName(req.params['siteName']).search(req.query.query)
                 .subscribe(results => {
                     res.json(results.map((p: Page) => PageDto.fromObject(p)));
                 }, err => next(err));
         });
 
-        this.app.get('/details', (req, res, next) => {
+        this.app.get('/api/details', (req, res, next) => {
             const link = req.query.link;
             const host = req.query.site;
 

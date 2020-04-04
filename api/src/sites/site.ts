@@ -12,7 +12,8 @@ export abstract class Site {
     protected constructor(public readonly baseUrl: string,
                           protected pageSearchRequest: string,
                           protected readonly searchRequest: string[][],
-                          protected readonly queryParameterName: string) {
+                          protected readonly queryParameterName: string,
+                          protected readonly queryTypeParameterName: string = null) {
         this.name = this.constructor.name;
     }
 
@@ -22,9 +23,12 @@ export abstract class Site {
 
     public abstract getRecents(): Observable<Page[]>;
 
-    protected getSearchUrl(query: string): string {
+    protected getSearchUrl(query: string, type: string = null): string {
         const searchRequest = this.searchRequest.slice(0);
         searchRequest.find(r => r[0] === this.queryParameterName)[1] = query;
+        if (type) {
+            searchRequest.find(r => r[0] === this.queryTypeParameterName)[1] = type;
+        }
         return this.getLinkWithBaseIfNeeded(this.pageSearchRequest) + '?' + searchRequest.map(r => r.join('=')).join('&');
     }
 
@@ -52,6 +56,8 @@ export abstract class Site {
             .replace(/[\u0300-\u036f]/g, '')
             .replace(/["'<>]/g, ' ')
             .toLowerCase();
+
+        console.log(url);
 
         return new Observable<string>(observer => {
             (cloudscraper as any).get(this.getLinkWithBaseIfNeeded(url)).then(data => observer.next(data), error => observer.error(error));

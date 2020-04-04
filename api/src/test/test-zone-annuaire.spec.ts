@@ -1,6 +1,6 @@
 import { ZoneAnnuaire } from '../sites/zone-annuaire';
 
-describe('AnnuraireTelechargement', () => {
+describe('ZoneAnnuaire', () => {
     const site = new ZoneAnnuaire();
 
     test('Recents', done => {

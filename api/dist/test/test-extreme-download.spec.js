@@ -1,5 +1,5 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", {value: true});
+Object.defineProperty(exports, "__esModule", { value: true });
 const extreme_download_1 = require("../sites/extreme-download");
 describe('ExtremeDownload', () => {
     const site = new extreme_download_1.ExtremeDownload();

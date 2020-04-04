@@ -17,62 +17,10 @@ export class ZoneAnnuaire extends Site {
                 'search'
             ],
             [
-                'search_start',
-                '0'
-            ],
-            [
-                'full_search',
-                '1'
-            ],
-            [
-                'result_from',
-                '1'
-            ],
-            [
-                'story',
+                'q',
                 'query'
-            ],
-            [
-                'titleonly',
-                '3'
-            ],
-            [
-                'searchuser',
-                ''
-            ],
-            [
-                'replyless',
-                '0'
-            ],
-            [
-                'replylimit',
-                '0'
-            ],
-            [
-                'searchdate',
-                '0'
-            ],
-            [
-                'beforeafter',
-                'after'
-            ],
-            [
-                'sortby',
-                'date'
-            ],
-            [
-                'resorder',
-                'desc'
-            ],
-            [
-                'showposts',
-                '0'
-            ],
-            [
-                'catlist%5B%5D',
-                '0'
             ]
-        ], 'story');
+        ], 'q');
     }
 
     getDetails(url: string): Observable<Page> {

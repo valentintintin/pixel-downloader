@@ -6,7 +6,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "ng build --configuration production",
     "lint": "ng lint"
   },
   "private": true,
@@ -21,6 +21,7 @@
     "@angular/platform-browser": "~8.2.14",
     "@angular/platform-browser-dynamic": "~8.2.14",
     "@angular/router": "~8.2.14",
+    "fuse.js": "^3.4.6",
     "hammerjs": "^2.0.8",
     "ngx-cookie-service": "^3.0.3",
     "ngx-pipes": "^2.7.3",

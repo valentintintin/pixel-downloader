@@ -5,7 +5,7 @@ export class Link {
         public url: string,
         public host: string = null,
     ) {
-        this.title = title.replace('Télécharger', '').trim();
+        this.title = title.replace('Télécharger', '').replace('Regarder', '').replace(':', '').trim();
         if (!url) {
             throw new Error('Link created with empty url');
         }

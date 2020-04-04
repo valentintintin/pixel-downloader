@@ -11,19 +11,23 @@ import { PageDto } from './model/page-dto';
 })
 export class ApiService {
 
-  private sites = new BehaviorSubject<LinkDto[]>(null);
+  private _sites$ = new BehaviorSubject<LinkDto[]>(null);
+
+  public sites$(): Observable<LinkDto[]> {
+    return this._sites$.asObservable();
+  }
 
   constructor(private http: HttpClient) {
   }
 
   public getSites(): Observable<LinkDto[]> {
-    if (!this.sites.getValue()) {
-      this.sites.next([]);
+    if (!this._sites$.getValue()) {
+      this._sites$.next([]);
       return this.http.get<LinkDto[]>(environment.api + '/sites').pipe(
-          tap(sites => this.sites.next(sites))
+          tap(sites => this._sites$.next(sites))
       );
     }
-    return this.sites.asObservable();
+    return this.sites$();
   }
 
   public getRecent(site: string): Observable<PageDto[]> {
@@ -50,7 +54,7 @@ export class ApiService {
       }
     }).pipe(
         tap(details => {
-          if (!details.title) {
+          if (!details.fileLinks || details.fileLinks.length === 0) {
             throw Error('Impossible de récupérer les détails du lien');
           }
         }),
