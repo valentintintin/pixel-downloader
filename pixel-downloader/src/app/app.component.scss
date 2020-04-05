@@ -63,6 +63,9 @@ main {
             figcaption {
                 margin-bottom: 5px;
                 text-align: center;
+
+                display: flex;
+                flex-direction: column;
             }
 
             img {

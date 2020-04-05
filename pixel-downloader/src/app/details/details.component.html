@@ -1,5 +1,5 @@
 <h3>
-    <span>{{ (details | async).title }}</span>
+    <span>{{ (details | async).title }} - {{ (details | async).host }}</span>
     <a [href]="(details | async).url" target="_blank" matTooltip="Voir le site" mat-icon-button>
         <mat-icon>open_in_new</mat-icon>
     </a>

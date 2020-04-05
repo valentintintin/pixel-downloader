@@ -37,7 +37,10 @@
         <mat-progress-bar mode="buffer" [value]="querySiteProgress" *ngIf="querySiteProgress"></mat-progress-bar>
         <div class="results" *ngIf="(results | async).length > 0; else empty">
             <figure class="result mat-elevation-z1" *ngFor="let page of results | async" (click)="openDetails(page)">
-                <figcaption>{{ page.title }}</figcaption>
+                <figcaption>
+                    <b>{{ page.title }}</b>
+                    <i>{{ page.host }}</i>
+                </figcaption>
                 <img [src]="page.image ? page.image : './assets/poster-placeholder.png'" [alt]="page.title"/>
             </figure>
         </div>

@@ -17,7 +17,6 @@ export class DetailsComponent implements OnInit, OnDestroy {
 
   constructor(public dialogRef: MatDialogRef<DetailsComponent>, @Inject(MAT_DIALOG_DATA) public data: DetailsComponentData,
               private apiService: ApiService, private snackbar: MatSnackBar) {
-    this.details.next(this.data.link);
   }
 
   ngOnInit() {
@@ -29,12 +28,13 @@ export class DetailsComponent implements OnInit, OnDestroy {
   }
 
   public openDetails(link: PageDto): void {
-    this.subscription.add(this.apiService.getDetails(link).subscribe(details => this.details.next(details), (err: Error) => {
-      this.snackbar.open(err ? err.message : 'Une erreur est survenue', 'Ouvrir le site', {
-        duration: 5000
-      }).onAction().subscribe(_ => window.open(link.url, '_blank'));
-      this.dialogRef.close();
-    }));
+    this.details.next(link);
+      this.subscription.add(this.apiService.getDetails(link).subscribe(details => this.details.next(details), (err: Error) => {
+          this.snackbar.open(err ? err.message : 'Une erreur est survenue', 'Ouvrir le site', {
+              duration: 5000
+          }).onAction().subscribe(_ => window.open(link.url, '_blank'));
+          this.dialogRef.close();
+      }));
   }
 }
 
