@@ -5,7 +5,13 @@ export class Link {
         public url: string,
         public host: string = null,
     ) {
-        this.title = title.replace('Télécharger', '').replace('Regarder', '').replace(':', '').trim();
+        this.title = title
+            .replace('Télécharger', '')
+            .replace('Regarder', '')
+            .replace('-', '')
+            .replace(':', '')
+            .trim();
+
         if (!url) {
             throw new Error('Link created with empty url');
         }
@@ -14,8 +20,16 @@ export class Link {
         if (!host || host.trim().length < 3) {
             this.host = null;
         } else {
-            this.host = host.replace(':', '').replace(title, '').trim();
+            this.host = host
+                .replace('-', '')
+                .replace(':', '')
+                .replace(title, '')
+                .trim();
         }
+
+        this.title = this.title
+            .replace(this.host, '')
+            .trim();
     }
 
     public toString(): string {
