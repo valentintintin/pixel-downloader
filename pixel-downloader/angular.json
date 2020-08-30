@@ -106,5 +106,8 @@
       }
     }
   },
-  "defaultProject": "pixel-downloader"
+  "defaultProject": "pixel-downloader",
+  "cli": {
+    "analytics": "cec9a81b-6704-4aca-bbbe-01507531cbc3"
+  }
 }

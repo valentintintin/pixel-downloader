@@ -7,7 +7,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { DetailsComponent, DetailsComponentData } from './details/details.component';
 import { WarningComponent } from './warning/warning.component';
 import { CookieService } from 'ngx-cookie-service';
-import * as Fuse from 'fuse.js';
+import Fuse from 'fuse.js';
 
 @Component({
     selector: 'app-root',

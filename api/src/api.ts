@@ -1,11 +1,9 @@
 import * as config from './config';
 import { Site } from './sites/site';
-import { ZoneWarez } from './sites/zone-warez';
 import { Page } from './models/page';
 import * as express from 'express';
 import { PageDto } from './models/dto/page-dto';
 import { ExtremeDownload } from './sites/extreme-download';
-import { ZoneAnnuaire } from './sites/zone-annuaire';
 import { LinkDto } from './models/dto/link-dto';
 import { ZoneTelechargement } from './sites/zone-telechargement';
 import { AnnuaireTelechargement } from './sites/annuaire-telechargement';
@@ -14,8 +12,6 @@ export class Api {
 
     private readonly app: express.Application = express();
     private readonly sites: Site[] = [
-        new ZoneWarez(),
-        new ZoneAnnuaire(),
         new ExtremeDownload(),
         new ZoneTelechargement(),
         new AnnuaireTelechargement(),
@@ -59,15 +55,15 @@ export class Api {
         });
 
         this.app.get('/api/search/:siteName', (req, res, next) => {
-            this.getSiteByName(req.params['siteName']).search(req.query.query)
+            this.getSiteByName(req.params['siteName']).search((req.query as any).query)
                 .subscribe(results => {
                     res.json(results.map((p: Page) => PageDto.fromObject(p)));
                 }, err => next(err));
         });
 
         this.app.get('/api/details', (req, res, next) => {
-            const link = req.query.link;
-            const host = req.query.site;
+            const link = (req.query as any).link;
+            const host = (req.query as any).site;
 
             if (link && host) {
                 this.getSiteByName(host).getDetails(link)
