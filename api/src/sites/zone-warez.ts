@@ -4,10 +4,11 @@ import { map } from 'rxjs/operators';
 import { Page } from '../models/page';
 import { Link } from '../models/link';
 
+// cloudflare ne fonctionne plus
 export class ZoneWarez extends Site {
 
     constructor() {
-        super('https://www2.zone-warez.com/', 'index.php', [
+        super('https://www.tirexo.pro/', 'index.php', [
             [
                 'do',
                 'search'

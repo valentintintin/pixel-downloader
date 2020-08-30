@@ -4,6 +4,7 @@ import { Page } from '../models/page';
 import { map } from 'rxjs/operators';
 import { Link } from '../models/link';
 
+// Ne fonctionne plus
 export class MegaTelechargement extends Site {
 
     constructor() {

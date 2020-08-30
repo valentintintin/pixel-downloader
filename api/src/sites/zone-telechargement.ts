@@ -7,7 +7,7 @@ import { Link } from '../models/link';
 export class ZoneTelechargement extends Site {
 
     constructor() {
-        super('https://www.zone-telechargement.ninja/', 'index.php', [
+        super('https://www.zone-telechargement.casa/', 'index.php', [
             [
                 'p',
                 'type'
@@ -82,7 +82,7 @@ export class ZoneTelechargement extends Site {
     }
 
     search(query: string): Observable<Page[]> {
-        return combineLatest(['films', 'series'].map(type => this.searchPageProcess(query, type))).pipe(
+        return combineLatest(['films', 'series', 'mangas'].map(type => this.searchPageProcess(query, type))).pipe(
             map(results => [].concat.apply([], results).sort((a, b) => a.title < b.title ? -1 : 1)),
         );
     }

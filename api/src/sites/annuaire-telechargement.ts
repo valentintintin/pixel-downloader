@@ -7,7 +7,7 @@ import { Link } from '../models/link';
 export class AnnuaireTelechargement extends Site {
 
     constructor() {
-        super('https://www.annuaire-telechargement.best/', 'index.php', [
+        super('https://ww2.annuaire-telechargement.best/', 'index.php', [
             [
                 'p',
                 'type'
@@ -59,7 +59,7 @@ export class AnnuaireTelechargement extends Site {
     }
 
     search(query: string): Observable<Page[]> {
-        return combineLatest(['films', 'series'].map(type => this.searchPageProcess(query, type))).pipe(
+        return combineLatest(['films', 'series', 'mangas'].map(type => this.searchPageProcess(query, type))).pipe(
             map(results => [].concat.apply([], results).sort((a, b) => a.title < b.title ? -1 : 1)),
         );
     }
