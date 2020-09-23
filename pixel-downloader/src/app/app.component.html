@@ -22,10 +22,10 @@
             </mat-chip-list>
         </div>
 
-        <form (ngSubmit)="search(searchInput.value)">
+        <form (ngSubmit)="search()">
             <mat-form-field appearance="outline">
                 <mat-label>Mots clés</mat-label>
-                <input #searchInput matInput placeholder="doctor who"/>
+                <input [formControl]="searchInputControl" matInput placeholder="doctor who"/>
             </mat-form-field>
 
             <button mat-raised-button color="primary" type="submit">Rechercher</button>

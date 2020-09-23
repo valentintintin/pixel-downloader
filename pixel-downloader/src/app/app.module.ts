@@ -14,7 +14,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { DetailsComponent } from './details/details.component';
 import { MatDialogModule } from '@angular/material/dialog';
 import { NgPipesModule } from 'ngx-pipes';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -52,7 +52,8 @@ import { CookieService } from 'ngx-cookie-service';
         MatIconModule,
         MatTooltipModule,
         MatProgressSpinnerModule,
-        MatProgressBarModule
+        MatProgressBarModule,
+        ReactiveFormsModule
     ],
     providers: [
         ApiService,

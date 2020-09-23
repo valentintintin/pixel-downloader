@@ -8,6 +8,8 @@ import { DetailsComponent, DetailsComponentData } from './details/details.compon
 import { WarningComponent } from './warning/warning.component';
 import { CookieService } from 'ngx-cookie-service';
 import Fuse from 'fuse.js';
+import { ActivatedRoute, Router } from '@angular/router';
+import { FormControl } from '@angular/forms';
 
 @Component({
     selector: 'app-root',
@@ -20,13 +22,27 @@ export class AppComponent implements OnInit, OnDestroy {
     results = new BehaviorSubject<PageDto[]>([]);
     querySiteProgress: number = null;
 
-    private susbcriptions: Subscription;
+    searchInputControl = new FormControl();
 
-    constructor(public apiService: ApiService, private dialog: MatDialog, private coockieService: CookieService) {
+    private susbcriptions: Subscription;
+    private fuseDatas = new Fuse([], {
+        shouldSort: true,
+        findAllMatches: true,
+        threshold: 1,
+        keys: ['title']
+    });
+
+    constructor(public apiService: ApiService, private dialog: MatDialog, private coockieService: CookieService,
+                private activatedRoute: ActivatedRoute, private router: Router) {
     }
 
     ngOnInit(): void {
-        this.susbcriptions = this.apiService.getSites().subscribe();
+        this.susbcriptions = this.apiService.getSites().subscribe(_ => {
+            if (this.activatedRoute.snapshot.queryParams['q']) {
+                this.searchInputControl.setValue(this.activatedRoute.snapshot.queryParams['q']);
+                this.search();
+            }
+        });
 
         if (!this.coockieService.check('disclaimer')) {
             this.dialog.open(WarningComponent, {
@@ -45,6 +61,7 @@ export class AppComponent implements OnInit, OnDestroy {
             this.susbcriptions.unsubscribe();
             this.susbcriptions = null;
         }
+        let results = [];
         this.results.next([]);
         this.querySiteProgress = 0;
         this.susbcriptions =
@@ -53,40 +70,45 @@ export class AppComponent implements OnInit, OnDestroy {
                     sites.map(site => this.apiService.getRecent(site.title).pipe(
                         tap(recents => {
                             this.querySiteProgress += 1 / sites.length * 100;
-                            this.results.next([].concat.apply(this.results.getValue(), recents).sort((a, b) => a.title < b.title ? -1 : 1));
+                            results = results.concat(recents);
                         }))
                     )
                 ))
             ).subscribe(_ => {
                 this.querySiteProgress = null;
-                this.results.next(this.results.getValue().sort((a, b) => a.title < b.title ? -1 : 1));
+                this.results.next(results.sort((a, b) => a.title < b.title ? -1 : 1));
             });
     }
 
-    public search(query: string): void {
-        if (query) {
+    public search(): void {
+        if (this.searchInputControl.value) {
+            const query = this.searchInputControl.value;
+            this.router.navigate([''], { relativeTo: this.activatedRoute, queryParams: { q: query } });
+
             if (this.susbcriptions) {
                 this.susbcriptions.unsubscribe();
                 this.susbcriptions = null;
             }
+
+            let results = [];
             this.results.next([]);
             this.querySiteProgress = 0;
             this.susbcriptions =
                 this.apiService.getSites().pipe(
                     switchMap(sites => forkJoin(
                         sites.map(site => this.apiService.search(site.title, query).pipe(
-                            tap(results => {
+                            tap(resultsSite => {
                                 this.querySiteProgress += 1 / sites.length * 100;
-                                this.results.next(this.sortFuse(query, [].concat.apply(this.results.getValue(), results)));
+                                results = results.concat(resultsSite);
                             })
                         ))
                     ))
                 ).subscribe(_ => {
                     this.querySiteProgress = null;
-                    this.results.next(this.sortFuse(query, this.results.getValue()));
+                    this.fuseDatas.setCollection(results);
+                    this.results.next(this.fuseDatas.search(query).map(r => r.item));
                 });
         } else {
-            // this.getRecents();
             this.results.next([]);
             this.querySiteProgress = null;
         }
@@ -100,13 +122,5 @@ export class AppComponent implements OnInit, OnDestroy {
                 link: link
             } as DetailsComponentData
         });
-    }
-
-    private sortFuse(query: string, pages: PageDto[]): PageDto[] {
-        const fuseDatas = new Fuse(pages, {
-            shouldSort: true,
-            keys: ['title']
-        });
-        return fuseDatas.search(query) as any;
     }
 }
