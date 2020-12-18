@@ -7,7 +7,7 @@ import { Link } from '../models/link';
 export class ZoneTelechargement extends Site {
 
     constructor() {
-        super('https://www.zone-telechargement.casa/', 'index.php', [
+        super('https://www.zone-telechargement.pro/', 'index.php', [
             [
                 'p',
                 'type'

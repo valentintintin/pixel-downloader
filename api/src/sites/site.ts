@@ -62,9 +62,13 @@ export abstract class Site {
         return new Observable<string>(observer => {
             (cloudscraper as any).get(this.getLinkWithBaseIfNeeded(url)).then(data => observer.next(data), error => observer.error(error));
         }).pipe(
-            map(data => Cheerio.load(data)),
             catchError(err => {
                 console.error('url: ' + url, err);
+                return throwError(err);
+            }),
+            map(data => Cheerio.load(data)),
+            catchError(err => {
+                console.error('Cheerio', err);
                 return throwError(err);
             })
         );
