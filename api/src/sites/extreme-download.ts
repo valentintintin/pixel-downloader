@@ -11,7 +11,7 @@ import TagElement = cheerio.TagElement;
 export class ExtremeDownload extends Site {
 
     constructor() {
-        super('https://www.extreme-down.club/', 'home.html', [
+        super('https://www.extreme-download.im/', 'home.html', [
             [
                 'do',
                 'search'
