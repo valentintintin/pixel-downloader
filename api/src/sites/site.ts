@@ -4,6 +4,9 @@ import { catchError, map } from 'rxjs/operators';
 import Cheerio = require('cheerio');
 import RssToJson = require('rss-to-json');
 import cloudscraper = require('cloudscraper');
+import Selector = cheerio.Selector;
+import TagElement = cheerio.TagElement;
+import TextElement = cheerio.TextElement;
 
 export abstract class Site {
 
@@ -32,7 +35,7 @@ export abstract class Site {
         return this.getLinkWithBaseIfNeeded(this.pageSearchRequest) + '?' + searchRequest.map(r => r.join('=')).join('&');
     }
 
-    protected findText(el): string {
+    protected findText(el: TextElement | TagElement): string {
         let text = [];
 
         if (el) {
@@ -51,7 +54,7 @@ export abstract class Site {
         return text.length > 0 ? text.join(' ').trim() : '';
     }
 
-    protected runRequest(url: string): Observable<{} | CheerioStatic> {
+    protected runRequest(url: string): Observable<{} | Selector> {
         url = url.normalize('NFD')
             .replace(/[\u0300-\u036f]/g, '')
             .replace(/["'<>]/g, ' ')

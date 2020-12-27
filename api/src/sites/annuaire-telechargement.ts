@@ -3,11 +3,13 @@ import { combineLatest, Observable, of } from 'rxjs';
 import { Page } from '../models/page';
 import { map } from 'rxjs/operators';
 import { Link } from '../models/link';
+import TagElement = cheerio.TagElement;
+import Selector = cheerio.Selector;
 
 export class AnnuaireTelechargement extends Site {
 
     constructor() {
-        super('https://ww2.annuaire-telechargement.best/', 'index.php', [
+        super('https://www.annuaire-telechargement.casa/', 'index.php', [
             [
                 'p',
                 'type'
@@ -21,7 +23,7 @@ export class AnnuaireTelechargement extends Site {
 
     getDetails(url: string): Observable<Page> {
         return this.runRequest(url).pipe(
-            map(($: CheerioStatic) => {
+            map(($: Selector) => {
                 const pageImg = $('.affichefiche');
                 const pageDetail = new Page(
                     $('.hr-divider-heading').text(),
@@ -30,7 +32,7 @@ export class AnnuaireTelechargement extends Site {
                     pageImg.length ? pageImg.attr('src') : null
                 );
 
-                $('.liste_saisons a').each((index, element) => {
+                $('.liste_saisons a').each((index, element: TagElement) => {
                     pageDetail.relatedPage.push(new Page(
                         this.findText(element),
                         element.attribs.href,
@@ -39,7 +41,7 @@ export class AnnuaireTelechargement extends Site {
                 });
 
                 pageDetail.fileLinks = [];
-                $('a.list-group-item').each((index, element) => {
+                $('a.list-group-item').each((index, element: TagElement) => {
                     const pageEl = $(element).children('span');
                     const title = pageEl.children('b').text();
                     if (!title.includes('LIEN PREMIUM')) {
@@ -66,9 +68,9 @@ export class AnnuaireTelechargement extends Site {
 
     private searchPageProcess(query: string, type: string): Observable<Page[]> {
         return this.runRequest(this.getSearchUrl(query, type)).pipe(
-            map(($: CheerioStatic) => {
+            map(($: Selector) => {
                 const pages: Page[] = [];
-                $('.row .statcards a').each((index, element) => {
+                $('.row .statcards a').each((index, element: TagElement) => {
                     const pageEl = $(element);
                     const pageImg = $('.affiche', element);
                     pages.push(new Page(

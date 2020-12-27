@@ -65,7 +65,6 @@
               "sourceMap": {
                 "hidden": true
               },
-              "extractCss": true,
               "namedChunks": false,
               "aot": true,
               "extractLicenses": true,

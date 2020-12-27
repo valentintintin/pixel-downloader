@@ -3,7 +3,6 @@ import { Site } from './sites/site';
 import { Page } from './models/page';
 import * as express from 'express';
 import { PageDto } from './models/dto/page-dto';
-import { ExtremeDownload } from './sites/extreme-download';
 import { LinkDto } from './models/dto/link-dto';
 import { ZoneTelechargement } from './sites/zone-telechargement';
 import { AnnuaireTelechargement } from './sites/annuaire-telechargement';
@@ -12,7 +11,6 @@ export class Api {
 
     private readonly app: express.Application = express();
     private readonly sites: Site[] = [
-        new ExtremeDownload(),
         new ZoneTelechargement(),
         new AnnuaireTelechargement(),
     ];

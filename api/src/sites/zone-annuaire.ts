@@ -3,6 +3,8 @@ import { Observable } from 'rxjs';
 import { Page } from '../models/page';
 import { map } from 'rxjs/operators';
 import { Link } from '../models/link';
+import Selector = cheerio.Selector;
+import TagElement = cheerio.TagElement;
 
 // ne fonctionne plus
 export class ZoneAnnuaire extends Site {
@@ -26,7 +28,7 @@ export class ZoneAnnuaire extends Site {
 
     getDetails(url: string): Observable<Page> {
         return this.runRequest(url).pipe(
-            map(($: CheerioStatic) => {
+            map(($: Selector) => {
                 const pageEl = $('.corps .smallsep').next();
                 const pageImg = $('.fr-fic.fr-dib');
                 const pageImg2 = $('.corps center img:first-child');
@@ -37,7 +39,7 @@ export class ZoneAnnuaire extends Site {
                     !pageImg.length ? !pageImg2.length ? null : pageImg2.attr('src') : pageImg.attr('src')
                 );
 
-                $('.otherversions a').each((index, element) => {
+                $('.otherversions a').each((index, element: TagElement) => {
                     pageDetail.relatedPage.push(new Page(
                         this.findText(element),
                         element.attribs.href,
@@ -47,17 +49,19 @@ export class ZoneAnnuaire extends Site {
 
                 pageDetail.fileLinks = [];
                 let lastHost = null;
-                $('.postinfo a').each((index, element) => {
-                    if (element.parent.prev.firstChild !== null) {
-                        lastHost = element.parent.prev.firstChild.firstChild.data;
+                $('.postinfo a').each((index, element: TagElement) => {
+                    const prev = element.parent.prev as TagElement;
+                    if (prev.firstChild !== null) {
+                        lastHost = (prev.firstChild as TagElement).firstChild.data;
                     }
                     pageDetail.fileLinks.push(new Link(element.firstChild.data, this.getLinkWithBaseIfNeeded(element.attribs.href), lastHost));
                 });
-                $('.postinfo form').each((index, element) => {
-                    if (element.parent.prev.firstChild !== null) {
-                        lastHost = element.parent.prev.firstChild.firstChild.data;
+                $('.postinfo form').each((index, element: TagElement) => {
+                    const prev = element.parent.prev as TagElement;
+                    if (prev.firstChild !== null) {
+                        lastHost = (prev.firstChild as TagElement).firstChild.data;
                     }
-                    pageDetail.fileLinks.push(new Link('', pageDetail.url, lastHost));
+                    pageDetail.fileLinks.push(new Link(element.firstChild.data, this.getLinkWithBaseIfNeeded(element.attribs.href), lastHost));
                 });
                 return pageDetail;
             })
@@ -72,9 +76,9 @@ export class ZoneAnnuaire extends Site {
 
     search(query: string): Observable<Page[]> {
         return this.runRequest(this.getSearchUrl(query)).pipe(
-            map(($: CheerioStatic) => {
+            map(($: Selector) => {
                 const pages: Page[] = [];
-                $('.cover_global').each((index, element) => {
+                $('.cover_global').each((index, element: TagElement) => {
                     const pageEl = $('.cover_infos_title a', element);
                     const pageElInfo = $('.cover_infos_title .detail_release', element);
                     const pageImg = $('.mainimg', element);

@@ -3,6 +3,8 @@ import { Observable } from 'rxjs';
 import { Page } from '../models/page';
 import { map } from 'rxjs/operators';
 import { Link } from '../models/link';
+import TagElement = cheerio.TagElement;
+import Selector = cheerio.Selector;
 
 // Ne fonctionne plus
 export class MegaTelechargement extends Site {
@@ -82,7 +84,7 @@ export class MegaTelechargement extends Site {
 
     getDetails(url: string): Observable<Page> {
         return this.runRequest(url).pipe(
-            map(($: CheerioStatic) => {
+            map(($: Selector) => {
                 const pageEl = $('.corps h1');
                 const pageElInfo = $('.corps h2');
                 const pageImg = $('.corps center img').first();
@@ -92,7 +94,7 @@ export class MegaTelechargement extends Site {
                     pageImg.attr('src')
                 );
 
-                $('.otherversions a').each((index, element) => {
+                $('.otherversions a').each((index, element: TagElement) => {
                     pageDetail.relatedPage.push(new Page(
                         this.findText(element),
                         element.attribs.href,
@@ -101,14 +103,14 @@ export class MegaTelechargement extends Site {
                 });
 
                 pageDetail.fileLinks = [];
-                $('.ilinx_global a').each((index, element) => {
+                $('.ilinx_global a').each((index, element: TagElement) => {
                     const linkInfo = element.parent.prev.prev;
                     if (!element.attribs.href.includes('javascript')) {
                         pageDetail.fileLinks.push(new Link(element.firstChild.data, element.attribs.href, this.findText(linkInfo)));
                     }
                 });
-                $('.corps center:last-of-type b:nth-child(odd)').each((index, element) => {
-                    const host = this.findText(element.children);
+                $('.corps center:last-of-type b:nth-child(odd)').each((index, element: TagElement) => {
+                    const host = this.findText(element);
                     const link = $('a', element.next.next);
                     pageDetail.fileLinks.push(new Link('Premium', link.first().attr('href'), host));
                 });
@@ -126,9 +128,9 @@ export class MegaTelechargement extends Site {
 
     search(query: string): Observable<Page[]> {
         return this.runRequest(this.getSearchUrl(query)).pipe(
-            map(($: CheerioStatic) => {
+            map(($: Selector) => {
                 const pages: Page[] = [];
-                $('.cover_global').each((index, element) => {
+                $('.cover_global').each((index, element: TagElement) => {
                     const pageEl = $('a:last-child', element);
                     const pageImg = $('img', element);
                     pages.push(new Page(

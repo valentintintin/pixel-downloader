@@ -3,7 +3,11 @@ import { Observable } from 'rxjs';
 import { Page } from '../models/page';
 import { map } from 'rxjs/operators';
 import { Link } from '../models/link';
+import cheerio from 'cheerio'
+import Selector = cheerio.Selector;
+import TagElement = cheerio.TagElement;
 
+// Ne fonctionne plus
 export class ExtremeDownload extends Site {
 
     constructor() {
@@ -25,7 +29,7 @@ export class ExtremeDownload extends Site {
 
     getDetails(url: string): Observable<Page> {
         return this.runRequest(url).pipe(
-            map(($: CheerioStatic) => {
+            map(($: Selector) => {
                 const pageEl = $('#news-title');
                 const pageImg = $('.blockcontent img');
                 const pageDetail = new Page(
@@ -35,7 +39,7 @@ export class ExtremeDownload extends Site {
                     !pageImg.length ? null : pageImg.attr('src')
                 );
 
-                $('.widget a.btn-other').each((index, element) => {
+                $('.widget a.btn-other').each((index, element: TagElement) => {
                     pageDetail.relatedPage.push(new Page(
                         this.findText(element),
                         element.attribs.href,
@@ -44,7 +48,7 @@ export class ExtremeDownload extends Site {
                 });
 
                 pageDetail.fileLinks = [];
-                $('.blockcontent a').each((index, element) => {
+                $('.blockcontent a').each((index, element: TagElement) => {
                     if (
                         element.attribs.href &&
                         (
@@ -52,7 +56,7 @@ export class ExtremeDownload extends Site {
                             !element.attribs.href.includes('shop') &&
                             !element.attribs.href.includes('prezup') &&
                             !element.attribs.href.includes('register') &&
-                            ['div', 'strong', 'p'].includes(element.parent.name)
+                            ['div', 'strong', 'p'].includes((element.parent as TagElement).name)
                         ) &&
                         (!element.attribs.title || !element.attribs.title.includes('Regarder')) &&
                         element.attribs.target
@@ -80,9 +84,9 @@ export class ExtremeDownload extends Site {
 
     search(query: string): Observable<Page[]> {
         return this.runRequest(this.getSearchUrl(query)).pipe(
-            map(($: CheerioStatic) => {
+            map(($: Selector) => {
                 const pages: Page[] = [];
-                $('#dle-content a.thumbnails').each((index, element) => {
+                $('#dle-content a.thumbnails').each((index, element: TagElement) => {
                     const pageImg = $('img', element);
                     pages.push(new Page(
                         this.findText(element),

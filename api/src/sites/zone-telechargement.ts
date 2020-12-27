@@ -3,11 +3,13 @@ import { combineLatest, Observable, of } from 'rxjs';
 import { Page } from '../models/page';
 import { map } from 'rxjs/operators';
 import { Link } from '../models/link';
+import Selector = cheerio.Selector;
+import TagElement = cheerio.TagElement;
 
 export class ZoneTelechargement extends Site {
 
     constructor() {
-        super('https://www.zone-telechargement.casa/', 'index.php', [
+        super('https://www.zone-telechargement.pro/', 'index.php', [
             [
                 'p',
                 'type'
@@ -21,7 +23,7 @@ export class ZoneTelechargement extends Site {
 
     getDetails(url: string): Observable<Page> {
         return this.runRequest(url).pipe(
-            map(($: CheerioStatic) => {
+            map(($: Selector) => {
                 let pageEl = $('.corps .smallsep').next();
 
                 let title = pageEl.text() + ' ' + pageEl.next().text();
@@ -47,7 +49,7 @@ export class ZoneTelechargement extends Site {
                     !pageImg.length ? !pageImg2.length ? null : pageImg2.attr('src') : pageImg.attr('src')
                 );
 
-                $('.otherversions a').each((index, element) => {
+                $('.otherversions a').each((index, element: TagElement) => {
                     pageDetail.relatedPage.push(new Page(
                         this.findText(element),
                         element.attribs.href,
@@ -57,15 +59,17 @@ export class ZoneTelechargement extends Site {
 
                 pageDetail.fileLinks = [];
                 let lastHost = null;
-                $('.postinfo a').each((index, element) => {
-                    if (element.parent.prev.firstChild !== null) {
-                        lastHost = element.parent.prev.firstChild.firstChild.data;
+                $('.postinfo a').each((index, element: TagElement) => {
+                    const prev = element.parent.prev as TagElement;
+                    if (prev.firstChild !== null) {
+                        lastHost = (prev.firstChild as TagElement).firstChild.data;
                     }
                     pageDetail.fileLinks.push(new Link(element.firstChild.data, this.getLinkWithBaseIfNeeded(element.attribs.href), lastHost));
                 });
-                $('.postinfo form').each((index, element) => {
-                    if (element.parent.prev.firstChild !== null) {
-                        lastHost = element.parent.prev.firstChild.firstChild.data;
+                $('.postinfo form').each((index, element: TagElement) => {
+                    const prev = element.parent.prev as TagElement;
+                    if (prev.firstChild !== null) {
+                        lastHost = (prev.firstChild as TagElement).firstChild.data;
                     }
                     pageDetail.fileLinks.push(new Link('', pageDetail.url, lastHost));
                 });
@@ -89,9 +93,9 @@ export class ZoneTelechargement extends Site {
 
     private searchPageProcess(query: string, type: string): Observable<Page[]> {
         return this.runRequest(this.getSearchUrl(query, type)).pipe(
-            map(($: CheerioStatic) => {
+            map(($: Selector) => {
                 const pages: Page[] = [];
-                $('.cover_global').each((index, element) => {
+                $('.cover_global').each((index, element: TagElement) => {
                     const pageEl = $('.cover_infos_title a', element);
                     const pageElInfo = $('.cover_infos_title .detail_release', element);
                     const pageImg = $('.mainimg', element);

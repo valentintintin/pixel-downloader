@@ -3,6 +3,8 @@ import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Page } from '../models/page';
 import { Link } from '../models/link';
+import Selector = cheerio.Selector;
+import TagElement = cheerio.TagElement;
 
 // cloudflare ne fonctionne plus
 export class ZoneWarez extends Site {
@@ -38,9 +40,9 @@ export class ZoneWarez extends Site {
 
     search(query: string): Observable<Page[]> {
         return this.runRequest(this.getSearchUrl(query)).pipe(
-            map(($: CheerioStatic) => {
+            map(($: Selector) => {
                 const pages: Page[] = [];
-                $('.mov > a:first-child').each((index, element) => {
+                $('.mov > a:first-child').each((index, element: TagElement) => {
                     const pageImg = $('img', element);
                     pages.push(new Page(
                         element.attribs.title,
@@ -56,7 +58,7 @@ export class ZoneWarez extends Site {
 
     getDetails(url: string): Observable<Page> {
         return this.runRequest(url).pipe(
-            map(($: CheerioStatic) => {
+            map(($: Selector) => {
                 const pageEl = $('h2').find('b');
                 const pageElInfo = pageEl.parent().next();
                 let pageImg = $('.jaquette');
@@ -70,7 +72,7 @@ export class ZoneWarez extends Site {
                     !pageImg.length ? null : (pageImg.attr('src') ? pageImg.attr('src') : pageImg.data('cfsrc'))
                 );
 
-                $('.otherversions a').each((index, element) => {
+                $('.otherversions a').each((index, element: TagElement) => {
                     pageDetail.relatedPage.push(new Page(
                         this.findText(element),
                         element.attribs.href,
@@ -79,10 +81,10 @@ export class ZoneWarez extends Site {
                 });
 
                 const hosts = $('table.downloadsortsonlink');
-                hosts.find('thead th:first-child').each((index, element) => {
+                hosts.find('thead th:first-child').each((index, element: TagElement) => {
                     $('.download', hosts.get(index)).each((index1, linkElement) => pageDetail.fileLinks.push(new Link(
                         this.findText(linkElement),
-                        this.getLinkWithBaseIfNeeded(linkElement.attribs.href),
+                        this.getLinkWithBaseIfNeeded((linkElement as TagElement).attribs.href),
                         this.findText(element)
                     )));
                 });
