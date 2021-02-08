@@ -3,6 +3,15 @@ mat-toolbar {
     justify-content: space-between;
     flex-wrap: wrap;
 
+    .title {
+        display: flex;
+        align-items: center;
+
+        img {
+            margin-right: 10px;
+        }
+    }
+
     a {
         text-decoration: none;
         color: inherit;
