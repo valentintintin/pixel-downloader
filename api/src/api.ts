@@ -6,6 +6,7 @@ import { PageDto } from './models/dto/page-dto';
 import { LinkDto } from './models/dto/link-dto';
 import { ZoneTelechargement } from './sites/zone-telechargement';
 import { AnnuaireTelechargement } from './sites/annuaire-telechargement';
+import { Wawacity } from './sites/wawacity';
 
 export class Api {
 
@@ -13,6 +14,7 @@ export class Api {
     private readonly sites: Site[] = [
         new ZoneTelechargement(),
         new AnnuaireTelechargement(),
+        new Wawacity()
     ];
 
     private getSiteByName(name: string): Site {
