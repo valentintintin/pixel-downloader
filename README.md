@@ -4,10 +4,9 @@ Tools to search from warez sites.
 ## Description
 
 This tool search inside a few french warez website :
-* Extreme-download
 * Zone-telechargement
 * Mega-telechargement
-* ...
+* Wawacity
 
 It can do :
 * Search inside website
