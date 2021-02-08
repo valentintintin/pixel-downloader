@@ -19,11 +19,11 @@
   },
   "devDependencies": {
     "@types/cheerio": "^0.22.23",
-    "@types/express": "^4.17.9",
-    "@types/jest": "^26.0.19",
-    "@types/node": "^14.14.16",
+    "@types/express": "^4.17.11",
+    "@types/jest": "^26.0.20",
+    "@types/node": "^14.14.25",
     "jest": "^26.6.3",
-    "ts-jest": "^26.4.4"
+    "ts-jest": "^26.5.0"
   },
   "scripts": {
     "start": "ts-node src/index.ts",
