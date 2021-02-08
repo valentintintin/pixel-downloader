@@ -10,7 +10,7 @@
     <div class="actions">
         <a href="mailto:valentin.s.10@gmail.com?subject=[PixelDownload] Proposer un site&body=Nouveau site : "
            mat-flat-button color="primary" target="_blank">Proposer un site ?</a>
-        <a href="mailto:valentin.s.10@gmail.com?subject=[PixelDownload] Rapport de bug&body=Navigateur : {{ userAgent }}%0D%0ACommentaire du bug :"
+        <a href="mailto:valentin.s.10@gmail.com?subject=[PixelDownload] Rapport de bug&body=Commentaire du bug :%0D%0ANavigateur : {{ userAgent }}"
            mat-flat-button color="accent" target="_blank">Un bug ?</a>
     </div>
 </mat-toolbar>
@@ -40,7 +40,8 @@
 
     <div>
         <h2>Liens :</h2>
-        <mat-progress-bar mode="buffer" [value]="querySiteProgress" *ngIf="querySiteProgress"></mat-progress-bar>
+        <mat-progress-bar mode="buffer" [value]="querySiteProgress"
+                          *ngIf="querySiteProgress !== null"></mat-progress-bar>
         <div class="results" *ngIf="(results | async).length > 0; else empty">
             <figure class="result mat-elevation-z1" *ngFor="let page of results | async" (click)="openDetails(page)">
                 <figcaption>
