@@ -35,13 +35,13 @@ export abstract class Site {
         return this.getLinkWithBaseIfNeeded(this.pageSearchRequest) + '?' + searchRequest.map(r => r.join('=')).join('&');
     }
 
-    protected findText(el: TextElement | TagElement): string {
+    protected findText(el: cheerio.Element | TextElement | TagElement): string {
         let text = [];
 
         if (el) {
             if (el.type === 'text') {
                 text.push(el.data.trim().replace('(', '').replace(')', ''));
-            } else if (el.children && el.children.length) {
+            } else if (el.type === 'tag' && el.children && el.children.length) {
                 for (const i in el.children) {
                     text = text.concat(this.findText(el.children[+i]));
                 }
