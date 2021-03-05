@@ -1,0 +1,8 @@
+version: '3.3'
+
+services:
+  pixel-downloader:
+    image: pixel-downloader
+    restart: always
+    ports:
+      - 3000:3000

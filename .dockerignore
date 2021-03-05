@@ -1,0 +1,6 @@
+.git
+.gitignore
+.idea
+
+api/node_modules
+pixel-downloader/node_modules
