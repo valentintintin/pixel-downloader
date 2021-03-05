@@ -9,7 +9,7 @@ import TagElement = cheerio.TagElement;
 export class ZoneTelechargement extends Site {
 
     constructor() {
-        super('https://www.zone-telechargement.pro/', 'index.php', [
+        super('https://www.zone-telechargement.cloud/', 'index.php', [
             [
                 'p',
                 'type'

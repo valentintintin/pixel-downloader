@@ -9,7 +9,7 @@ import Selector = cheerio.Selector;
 export class Wawacity extends Site {
 
     constructor() {
-        super('https://www.wawacity.video/', 'index.php', [
+        super('https://www.wawacity.tv/', 'index.php', [
             [
                 'p',
                 'type'

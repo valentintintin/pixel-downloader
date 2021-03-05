@@ -7,11 +7,13 @@ import { LinkDto } from './models/dto/link-dto';
 import { ZoneTelechargement } from './sites/zone-telechargement';
 import { AnnuaireTelechargement } from './sites/annuaire-telechargement';
 import { Wawacity } from './sites/wawacity';
+import { ExtremeDownload } from './sites/extreme-download';
 
 export class Api {
 
     private readonly app: express.Application = express();
     private readonly sites: Site[] = [
+        new ExtremeDownload(),
         new ZoneTelechargement(),
         new AnnuaireTelechargement(),
         new Wawacity()

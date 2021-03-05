@@ -7,11 +7,10 @@ import cheerio from 'cheerio'
 import Selector = cheerio.Selector;
 import TagElement = cheerio.TagElement;
 
-// Ne fonctionne plus
 export class ExtremeDownload extends Site {
 
     constructor() {
-        super('https://www.extreme-download.im/', 'home.html', [
+        super('https://www.extremedownload.co/', 'home.html', [
             [
                 'do',
                 'search'

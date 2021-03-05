@@ -9,7 +9,7 @@ import Selector = cheerio.Selector;
 export class AnnuaireTelechargement extends Site {
 
     constructor() {
-        super('https://www.annuaire-telechargement.casa/', 'index.php', [
+        super('https://www.annuaire-telechargement.ninja/', 'index.php', [
             [
                 'p',
                 'type'
