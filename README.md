@@ -26,4 +26,4 @@ Interface : Website with API (default: `http://localhost:3000`)
 ### Docker
 
 You can use the `docker-compose.example.yml` with `docker-compose up -d` or
-run `docker run -p 3000:3000 --name pixel-downloader pixel-downloader`
+run `docker run -p 3000:3000 --name pixel-downloader valentintintin/pixel-downloader`
