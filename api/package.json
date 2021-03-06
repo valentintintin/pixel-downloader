@@ -28,7 +28,8 @@
   "scripts": {
     "start": "ts-node src/index.ts",
     "test": "jest",
-    "build": "tsc -p tsconfig.json"
+    "build": "tsc -p tsconfig.json",
+    "start-js": "node dist/index.js"
   },
   "author": "Valentin Saugnier @valentintintin",
   "license": "ISC"

@@ -62,9 +62,7 @@
               ],
               "optimization": true,
               "outputHashing": "all",
-              "sourceMap": {
-                "hidden": true
-              },
+              "sourceMap": false,
               "namedChunks": false,
               "aot": true,
               "extractLicenses": true,
